@@ -1,0 +1,7 @@
+﻿*.jar
+*.dll
+*.download
+*.log
+*.exe
+natives/
+sources/
