@@ -23,5 +23,12 @@
       "sha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
       "size": 31152600
     }
+  },
+  "launcher": {
+    "version": "1.0.1",
+    "filename": "Lunarix.Launcher.exe",
+    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/748812232",
+    "sha1": "4489a6874a88958bec2c86abba77024624449cb7",
+    "size": 78437094
   }
 }
