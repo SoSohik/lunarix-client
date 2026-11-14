@@ -11,24 +11,24 @@
       "sha1": "c98467cbbaf4d197377266795ae015f4130d65b6",
       "size": 2426039
     },
-    "mods/sodium-fabric-0.8.14+mc1.21.11.jar": {
-      "sha1": "4a8733fe544168068d12fa94b2ab03e6c0c7bf91",
-      "size": 1909150
-    },
     "versions/Lunarix Client 1.21.11/Lunarix Client 1.21.11.json": {
-      "sha1": "267e6b270481bf46d8e114f42350a299359208c5",
+      "sha1": "e99dae2ff66756770bb09d47e876bff49ca634fc",
       "size": 52132
     },
     "versions/Lunarix Client 1.21.11/Lunarix Client 1.21.11.jar": {
       "sha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
       "size": 31152600
+    },
+    "mods/sodium-fabric-0.8.15-beta.1+mc1.21.11.jar": {
+      "sha1": "5469cef6f5dddd72a1216d9a15393c90d8eb5f33",
+      "size": 1914874
     }
   },
   "launcher": {
     "version": "1.0.3",
     "filename": "Lunarix.Launcher.exe",
-    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/748891455",
-    "sha1": "f615271f9731622f6558286281356a543622611c",
-    "size": 78494632
+    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/748910388",
+    "sha1": "49dcaa29addccb8f3db7d97913eb75aee44b833a",
+    "size": 78505297
   }
 }
