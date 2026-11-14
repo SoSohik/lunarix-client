@@ -1,38 +1,27 @@
 {
   "client_version": "1.0.0",
-  "minecraft_version": "26.2",
-  "fabric_loader": "0.20.1",
-  "release_url": "https://github.com/SoSohik/lunarix-client/releases/latest",
-  "files": [
-    {
-      "path": "mods/Lunarix-Client-26.2-1.0.jar",
-      "size": 138037636,
-      "sha1": "fc7a709cf419f7009783ab677e8d7f9ec73e13a7",
-      "url": "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/Lunarix-Client-26.2-1.0.jar"
+  "minecraft_version": "1.21.11",
+  "loader": "fabric",
+  "files": {
+    "mods/Lunarix-Client-1.21.11-1.0.jar": {
+      "sha1": "2fec577338c073abdc65a11db03b2099de7cd749",
+      "size": 138080491
     },
-    {
-      "path": "mods/fabric-api-0.161.0+26.2.jar",
-      "size": 2566123,
-      "sha1": "332da34ebb72171e603a0c538de17f4c54ea9e29",
-      "url": "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/fabric-api-0.161.0+26.2.jar"
+    "mods/fabric-api-0.141.6-1.21.11.jar": {
+      "sha1": "c98467cbbaf4d197377266795ae015f4130d65b6",
+      "size": 2426039
     },
-    {
-      "path": "mods/sodium-fabric-0.9.2+mc26.2.jar",
-      "size": 1885572,
-      "sha1": "62a70961a5b3e06938e06ab5f2dc4c5a51cf3323",
-      "url": "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/sodium-fabric-0.9.2+mc26.2.jar"
+    "mods/sodium-fabric-0.8.14+mc1.21.11.jar": {
+      "sha1": "4a8733fe544168068d12fa94b2ab03e6c0c7bf91",
+      "size": 1909150
     },
-    {
-      "path": "versions/Lunarix Client 26.2/Lunarix Client 26.2.json",
-      "size": 143172,
-      "sha1": "9390f25e32fdd982c7c264eed6fc9e5c2b3db7af",
-      "url": "https://raw.githubusercontent.com/SoSohik/lunarix-client/main/versions/Lunarix Client 26.2/Lunarix Client 26.2.json"
+    "versions/Lunarix Client 1.21.11/Lunarix Client 1.21.11.json": {
+      "sha1": "267e6b270481bf46d8e114f42350a299359208c5",
+      "size": 52132
     },
-    {
-      "path": "versions/Lunarix Client 26.2/Lunarix Client 26.2.jar",
-      "size": 39193383,
-      "sha1": "2dc72797acbc1b63fc16a11c4ac393605f453754",
-      "url": "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/Lunarix Client 26.2.jar"
+    "versions/Lunarix Client 1.21.11/Lunarix Client 1.21.11.jar": {
+      "sha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+      "size": 31152600
     }
-  ]
+  }
 }
