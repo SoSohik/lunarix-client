@@ -27,8 +27,8 @@
   "launcher": {
     "version": "1.2.2",
     "filename": "Lunarix.Launcher.exe",
-    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/750569943",
-    "sha1": "43bd9af9c2cc9822daf685ad3f509b6dad100762",
-    "size": 77856510
+    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/750646287",
+    "sha1": "a6b49bd874d2752338cc87cc5bd3aea190bddb34",
+    "size": 77856313
   }
 }
