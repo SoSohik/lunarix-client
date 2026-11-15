@@ -4,8 +4,8 @@
   "loader": "fabric",
   "files": {
     "mods/Lunarix-Client-v1.2.1.jar": {
-      "sha1": "ddcf15fb29c42c3cc7c52b090864e3af452c2951",
-      "size": 138087391
+      "sha1": "8d354600b6f4254be5b0744dd43d728d216a9de3",
+      "size": 138077522
     },
     "mods/fabric-api-0.141.6-1.21.11.jar": {
       "sha1": "c98467cbbaf4d197377266795ae015f4130d65b6",
