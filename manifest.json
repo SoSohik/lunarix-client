@@ -1,11 +1,11 @@
 {
-  "client_version": "1.0.0",
+  "client_version": "1.2.1",
   "minecraft_version": "1.21.11",
   "loader": "fabric",
   "files": {
-    "mods/Lunarix-Client-1.21.11-1.0.jar": {
-      "sha1": "47fbd6cccb034dcb2a3594a2d047b9de2e974113",
-      "size": 176490638
+    "mods/Lunarix-Client-v1.2.1.jar": {
+      "sha1": "fe42b1a9e584bc912c130c8d462ba5bda6be4bb1",
+      "size": 186244338
     },
     "mods/fabric-api-0.141.6-1.21.11.jar": {
       "sha1": "c98467cbbaf4d197377266795ae015f4130d65b6",
