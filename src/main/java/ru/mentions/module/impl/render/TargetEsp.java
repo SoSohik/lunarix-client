@@ -1398,26 +1398,46 @@ public class TargetEsp extends Module implements ModulePreview {
       long now,
       float speed
    ) {
+      if (alphaPC <= 0.001F) return;
       double t = (double)now / 1000.0 * (double)speed;
       class_2960 texture = visualTexture("chain.png");
-      int strands = 2;
-      int links = 16;
-      float link = 0.17F;
-      int alpha = (int)(220.0F * alphaPC);
+      int links = 24;
+      float link = 0.22F;
+      int alpha = (int)(255.0F * alphaPC);
+      double centerY = ty + (double)height * 0.5;
+      float tiltAngle = 35.0F;
 
-      for (int sIdx = 0; sIdx < strands; sIdx++) {
-         double base = (double)sIdx * Math.PI;
+      for (int c = 0; c < 2; c++) {
+         float currentTilt = c == 0 ? tiltAngle : -tiltAngle;
+         double spin = (c == 0 ? 1.0 : -1.0) * t * 2.2;
+
+         matrices.method_22903();
+         matrices.method_22904(tx, centerY, tz);
+         matrices.method_22907(class_7833.field_40718.rotationDegrees(currentTilt));
+         matrices.method_22907(class_7833.field_40716.rotationDegrees((float)Math.toDegrees(spin)));
+         Matrix4f matrix = matrices.method_23760().method_23761();
+
+         class_4588 buffer = immediate.method_73477(ROMB_ESP.apply(texture));
+         int clr = ColorUtil.replAlpha(color, alpha);
+         float r = radius * 1.15F;
 
          for (int i = 0; i < links; i++) {
-            double frac = (double)i / (double)links;
-            double angle = base + frac * Math.PI * 4.0 + t * 1.4;
-            double px = tx + Math.cos(angle) * (double)radius;
-            double pz = tz + Math.sin(angle) * (double)radius;
-            double py = ty + frac * (double)height;
-            float rot = (float)(angle + (Math.PI / 2));
-            int a = (int)((float)alpha * (0.55F + 0.45F * (float)Math.sin(frac * Math.PI)));
-            drawBillboardTESP(immediate, matrices, camera, px, py, pz, link, link * 1.6F, rot, texture, color, a);
+            double a0 = (double)i * (Math.PI * 2.0 / (double)links);
+            double a1 = (double)(i + 1) * (Math.PI * 2.0 / (double)links);
+
+            float x0 = (float)(Math.cos(a0) * (double)r);
+            float z0 = (float)(Math.sin(a0) * (double)r);
+            float x1 = (float)(Math.cos(a1) * (double)r);
+            float z1 = (float)(Math.sin(a1) * (double)r);
+
+            float halfH = link * 0.7F;
+            buffer.method_22918(matrix, x0, -halfH, z0).method_39415(clr).method_22913(0.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+            buffer.method_22918(matrix, x1, -halfH, z1).method_39415(clr).method_22913(1.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+            buffer.method_22918(matrix, x1, halfH, z1).method_39415(clr).method_22913(1.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+            buffer.method_22918(matrix, x0, halfH, z0).method_39415(clr).method_22913(0.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
          }
+
+         matrices.method_22909();
       }
    }
 
@@ -1606,40 +1626,85 @@ public class TargetEsp extends Module implements ModulePreview {
       float alphaPC,
       long now
    ) {
+      if (alphaPC <= 0.001F) return;
       double t = (double)now / 1000.0;
       class_2960 glow = visualTexture("glow.png");
-      class_4588 lineBuf = immediate.method_73477(RING_LINE_LAYER);
       double centerY = ty + (double)height * 0.5;
-      int alpha = (int)(220.0F * alphaPC);
+      int alpha = (int)(255.0F * alphaPC);
+      float thick = 0.065F;
+      int segments = 48;
+      int ringCount = 3;
 
-      for (int ring = 0; ring < 3; ring++) {
-         double ringTilt = (double)ring * (Math.PI / 3.0);
-         double spin = t * 1.6 + (double)ring * (Math.PI * 2.0 / 3.0);
+      for (int ring = 0; ring < ringCount; ring++) {
+         float ringOffset = (float)ring * 60.0F;
+         double ringSpin = t * 70.0 + (double)ring * 120.0;
 
          matrices.method_22903();
          matrices.method_22904(tx, centerY, tz);
-         matrices.method_22907(class_7833.field_40714.rotationDegrees((float)Math.toDegrees(ringTilt)));
-         matrices.method_22907(class_7833.field_40718.rotationDegrees((float)Math.toDegrees(spin)));
+         matrices.method_22907(class_7833.field_40714.rotationDegrees(ringOffset));
+         matrices.method_22907(class_7833.field_40716.rotationDegrees((float)ringSpin));
          Matrix4f matrix = matrices.method_23760().method_23761();
 
-         for (int seg = 0; seg < 32; seg++) {
-            double a0 = (double)seg * (Math.PI * 2.0 / 32.0);
-            double a1 = (double)(seg + 1) * (Math.PI * 2.0 / 32.0);
-            float x0 = (float)(Math.cos(a0) * (double)radius);
-            float z0 = (float)(Math.sin(a0) * (double)radius);
-            float x1 = (float)(Math.cos(a1) * (double)radius);
-            float z1 = (float)(Math.sin(a1) * (double)radius);
-            lineBuf.method_22918(matrix, x0, 0.0F, z0).method_39415(ColorUtil.replAlpha(color, alpha));
-            lineBuf.method_22918(matrix, x1, 0.0F, z1).method_39415(ColorUtil.replAlpha(color, alpha));
+         class_4588 fillBuf = immediate.method_73477(RING_FILL_LAYER);
+         int c = ColorUtil.replAlpha(color, (int)((float)alpha * 0.75F));
+
+         for (int i = 0; i < segments; i++) {
+            double a0 = (double)i * (Math.PI * 2.0 / (double)segments);
+            double a1 = (double)(i + 1) * (Math.PI * 2.0 / (double)segments);
+
+            float rIn = radius - thick;
+            float rOut = radius + thick;
+
+            float x0In = (float)(Math.cos(a0) * (double)rIn);
+            float z0In = (float)(Math.sin(a0) * (double)rIn);
+            float x1In = (float)(Math.cos(a1) * (double)rIn);
+            float z1In = (float)(Math.sin(a1) * (double)rIn);
+
+            float x0Out = (float)(Math.cos(a0) * (double)rOut);
+            float z0Out = (float)(Math.sin(a0) * (double)rOut);
+            float x1Out = (float)(Math.cos(a1) * (double)rOut);
+            float z1Out = (float)(Math.sin(a1) * (double)rOut);
+
+            fillBuf.method_22918(matrix, x0In, 0.0F, z0In).method_39415(c);
+            fillBuf.method_22918(matrix, x1In, 0.0F, z1In).method_39415(c);
+            fillBuf.method_22918(matrix, x1Out, 0.0F, z1Out).method_39415(c);
+            fillBuf.method_22918(matrix, x0Out, 0.0F, z0Out).method_39415(c);
          }
 
-         double electronAngle = spin * 2.0;
-         double ex = Math.cos(electronAngle) * (double)radius;
-         double ez = Math.sin(electronAngle) * (double)radius;
-         matrices.method_22909();
+         int electrons = 4;
+         for (int p = 0; p < electrons; p++) {
+            double pAngle = (double)p * (Math.PI * 2.0 / (double)electrons) + t * 2.5;
+            double px = Math.cos(pAngle) * (double)radius;
+            double pz = Math.sin(pAngle) * (double)radius;
 
-         drawBillboardTESP(immediate, matrices, camera, tx + ex, centerY, tz + ez, 0.18F, 0.18F, 0.0F, glow, color, alpha);
+            drawBillboardQuad(immediate, matrices, camera, px, 0.0, pz, 0.22F, 0.22F, glow, color, alpha);
+         }
+
+         matrices.method_22909();
       }
+   }
+
+   private static void drawBillboardQuad(
+      class_4598 immediate,
+      class_4587 matrices,
+      class_4184 camera,
+      double x,
+      double y,
+      double z,
+      float sx,
+      float sy,
+      class_2960 texture,
+      int color,
+      int alpha
+   ) {
+      if (alpha <= 0) return;
+      matrices.method_22903();
+      matrices.method_22904(x, y, z);
+      matrices.method_22907(camera.method_23767());
+      matrices.method_22905(sx, sy, 1.0F);
+      Matrix4f m = matrices.method_23760().method_23761();
+      drawGradientQuad(immediate.method_73477(ROMB_ESP.apply(texture)), m, color, color, color, color, alpha);
+      matrices.method_22909();
    }
 
    public static void renderCardsESP(
