@@ -1,34 +1,44 @@
-{
-  "client_version": "1.2.1",
-  "minecraft_version": "1.21.11",
-  "loader": "fabric",
-  "files": {
-    "mods/Lunarix-Client-v1.2.1.jar": {
-      "sha1": "ce712f43e2d7b3bba354fbb692687c02439a3c24",
-      "size": 139670606
-    },
-    "mods/fabric-api-0.141.6-1.21.11.jar": {
-      "sha1": "c98467cbbaf4d197377266795ae015f4130d65b6",
-      "size": 2426039
-    },
-    "versions/Lunarix Client 1.21.11/Lunarix Client 1.21.11.json": {
-      "sha1": "e99dae2ff66756770bb09d47e876bff49ca634fc",
-      "size": 52132
-    },
-    "versions/Lunarix Client 1.21.11/Lunarix Client 1.21.11.jar": {
-      "sha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
-      "size": 31152600
-    },
-    "mods/sodium-fabric-0.8.15-beta.1+mc1.21.11.jar": {
-      "sha1": "5469cef6f5dddd72a1216d9a15393c90d8eb5f33",
-      "size": 1914874
-    }
-  },
-  "launcher": {
-    "version": "1.2.2",
-    "filename": "Lunarix.Launcher.exe",
-    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/750880310",
-    "sha1": "174b70694b75138cc2765880c02aa24aa6faaf97",
-    "size": 76442945
-  }
+﻿{
+    "client_version":  "1.2.1",
+    "minecraft_version":  "1.21.11",
+    "loader":  "fabric",
+    "files":  [
+                  {
+                      "path":  "mods/Lunarix-Client-v1.2.1.jar",
+                      "size":  139677204,
+                      "sha1":  "81b1f07b2c77cc0842f256c4a27910b155665299",
+                      "url":  "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/Lunarix-Client-v1.2.1.jar"
+                  },
+                  {
+                      "path":  "mods/fabric-api-0.141.6-1.21.11.jar",
+                      "size":  2426039,
+                      "sha1":  "c98467cbbaf4d197377266795ae015f4130d65b6",
+                      "url":  "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/fabric-api-0.141.6-1.21.11.jar"
+                  },
+                  {
+                      "path":  "mods/sodium-fabric-0.8.15-beta.1+mc1.21.11.jar",
+                      "size":  1914874,
+                      "sha1":  "5469cef6f5dddd72a1216d9a15393c90d8eb5f33",
+                      "url":  "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/sodium-fabric-0.8.15-beta.1+mc1.21.11.jar"
+                  },
+                  {
+                      "path":  "versions/Lunarix Client 1.21.11/Lunarix Client 1.21.11.json",
+                      "size":  52132,
+                      "sha1":  "e99dae2ff66756770bb09d47e876bff49ca634fc",
+                      "url":  "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/Lunarix Client 1.21.11.json"
+                  },
+                  {
+                      "path":  "versions/Lunarix Client 1.21.11/Lunarix Client 1.21.11.jar",
+                      "size":  31152600,
+                      "sha1":  "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+                      "url":  "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/Lunarix Client 1.21.11.jar"
+                  }
+              ],
+    "launcher":  {
+                     "version":  "1.2.2",
+                     "filename":  "Lunarix.Launcher.exe",
+                     "url":  "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/750880310",
+                     "sha1":  "174b70694b75138cc2765880c02aa24aa6faaf97",
+                     "size":  76442945
+                 }
 }

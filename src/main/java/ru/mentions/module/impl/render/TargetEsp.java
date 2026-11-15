@@ -1401,8 +1401,8 @@ public class TargetEsp extends Module implements ModulePreview {
       if (alphaPC <= 0.001F) return;
       double t = (double)now / 1000.0 * (double)speed;
       class_2960 texture = visualTexture("chain.png");
-      int links = 24;
-      float linkH = 0.35F;
+      int links = 36;
+      float linkH = 0.42F;
       int alpha = (int)(255.0F * alphaPC);
       double centerY = ty + (double)height * 0.5;
       float maxTilt = 45.0F;
@@ -1432,8 +1432,8 @@ public class TargetEsp extends Module implements ModulePreview {
             float z1 = (float)(Math.sin(a1) * (double)r);
 
             float halfH = linkH * 0.5F;
-            float u0 = (float)i * (6.0F / (float)links) + (float)(spin * 0.8);
-            float u1 = (float)(i + 1) * (6.0F / (float)links) + (float)(spin * 0.8);
+            float u0 = (float)i * (10.0F / (float)links) + (float)(spin * 1.2);
+            float u1 = (float)(i + 1) * (10.0F / (float)links) + (float)(spin * 1.2);
 
             buffer.method_22918(matrix, x0, -halfH, z0).method_39415(clr).method_22913(u0, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
             buffer.method_22918(matrix, x1, -halfH, z1).method_39415(clr).method_22913(u1, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
@@ -1585,10 +1585,10 @@ public class TargetEsp extends Module implements ModulePreview {
       class_2960 c1 = visualTexture("circles1.png");
       class_2960 c2 = visualTexture("circles2.png");
       double groundY = ty + 0.02;
-      float rot1 = (float)(t * 120.0);
-      float rot2 = (float)(-t * 120.0);
-      float scale1 = radius * 1.35F;
-      float scale2 = radius * 1.55F;
+      float rot1 = (float)(t * 90.0);
+      float rot2 = (float)(-t * 90.0);
+      float scale1 = radius * 0.95F;
+      float scale2 = radius * 1.15F;
       int a = (int)(255.0F * alphaPC);
 
       drawGroundDiscTESP(immediate, matrices, tx, groundY, tz, scale1, rot1, c1, color, a);
@@ -1772,14 +1772,12 @@ public class TargetEsp extends Module implements ModulePreview {
       int swords = 8;
       int alpha = (int)(255.0F * alphaPC);
       double centerY = ty + (double)height * 0.45;
-      double speedVal = 1800.0;
+      double speedVal = 2200.0;
       double orbitAngle = ((double)(now % (long)speedVal) / speedVal) * (Math.PI * 2.0);
-      float halfW = 0.22F;
-      float halfH = 0.22F;
 
       for (int i = 0; i < swords; i++) {
          double swordAngle = orbitAngle + (double)i * (Math.PI * 2.0 / (double)swords);
-         double bob = Math.sin((double)now * 0.0035 + (double)i * (Math.PI / 4.0)) * 0.15;
+         double bob = Math.sin((double)now * 0.0035 + (double)i * (Math.PI / 4.0)) * 0.12;
          double px = tx + Math.cos(swordAngle) * (double)radius;
          double pz = tz + Math.sin(swordAngle) * (double)radius;
          double py = centerY + bob;
@@ -1787,14 +1785,15 @@ public class TargetEsp extends Module implements ModulePreview {
          matrices.method_22903();
          matrices.method_22904(px, py, pz);
          matrices.method_22907(class_7833.field_40716.rotationDegrees(-camera.method_19330()));
-         matrices.method_22907(class_7833.field_40718.rotationDegrees(135.0F));
          Matrix4f matrix = matrices.method_23760().method_23761();
          class_4588 consumer = immediate.method_73477(ROMB_ESP.apply(swordTex));
          int c = ColorUtil.replAlpha(color, alpha);
-         consumer.method_22918(matrix, -halfW, -halfH, 0.0F).method_39415(c).method_22913(0.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
-         consumer.method_22918(matrix, halfW, -halfH, 0.0F).method_39415(c).method_22913(1.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
-         consumer.method_22918(matrix, halfW, halfH, 0.0F).method_39415(c).method_22913(1.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
-         consumer.method_22918(matrix, -halfW, halfH, 0.0F).method_39415(c).method_22913(0.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+         float sw = 0.18F;
+         float sh = 0.36F;
+         consumer.method_22918(matrix, -sw, -sh, 0.0F).method_39415(c).method_22913(0.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+         consumer.method_22918(matrix, sw, -sh, 0.0F).method_39415(c).method_22913(1.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+         consumer.method_22918(matrix, sw, sh, 0.0F).method_39415(c).method_22913(1.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+         consumer.method_22918(matrix, -sw, sh, 0.0F).method_39415(c).method_22913(0.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
          matrices.method_22909();
       }
    }
