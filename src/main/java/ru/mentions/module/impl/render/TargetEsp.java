@@ -145,6 +145,22 @@ public class TargetEsp extends Module implements ModulePreview {
    public static final class_1921 RING_LINE_LAYER = ru.mentions.utils.render.RenderPipelineHelper.invokeMethod75940(
       "ring_esp_line", class_12247.method_75927(RING_LINE_PIPELINE).method_75929(16384).method_75938()
    );
+   public static final RenderPipeline CHAIN_ESP_PIPELINE = ru.mentions.utils.render.RenderPipelineHelper.invokeMethod67887(
+      RenderPipeline.builder(new Snippet[]{ru.mentions.utils.render.RenderPipelineHelper.getField60125()})
+         .withLocation("pipeline/chain_tex")
+         .withVertexShader("core/position_tex_color")
+         .withFragmentShader("core/position_tex_color")
+         .withSampler("Sampler0")
+         .withBlend(BlendFunction.TRANSLUCENT)
+         .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+         .withCull(false)
+         .withVertexFormat(class_290.field_1575, class_5596.field_27382)
+         .build()
+   );
+   public static final Function<class_2960, class_1921> CHAIN_ESP = class_156.method_34866(texture -> {
+      class_12247 setup = class_12247.method_75927(CHAIN_ESP_PIPELINE).method_75934("Sampler0", texture).method_75937().method_75929(1536).method_75938();
+      return ru.mentions.utils.render.RenderPipelineHelper.invokeMethod75940("chain_tex", setup);
+   });
    public static final RenderPipeline ROMB_ESP_PIPELINE = ru.mentions.utils.render.RenderPipelineHelper.invokeMethod67887(
       RenderPipeline.builder(new Snippet[]{ru.mentions.utils.render.RenderPipelineHelper.getField60125()})
          .withLocation("pipeline/wtex")
@@ -1418,7 +1434,7 @@ public class TargetEsp extends Module implements ModulePreview {
          matrices.method_22907(class_7833.field_40716.rotationDegrees((float)Math.toDegrees(spin)));
          Matrix4f matrix = matrices.method_23760().method_23761();
 
-         class_4588 buffer = immediate.method_73477(ROMB_ESP.apply(texture));
+         class_4588 buffer = immediate.method_73477(CHAIN_ESP.apply(texture));
          int clr = ColorUtil.replAlpha(color, alpha);
          float r = radius * 1.15F;
 
