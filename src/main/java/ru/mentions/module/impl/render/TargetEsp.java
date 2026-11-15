@@ -1402,11 +1402,11 @@ public class TargetEsp extends Module implements ModulePreview {
       double t = (double)now / 1000.0 * (double)speed;
       class_2960 texture = visualTexture("chain.png");
       int links = 24;
-      float link = 0.22F;
+      float linkH = 0.35F;
       int alpha = (int)(255.0F * alphaPC);
       double centerY = ty + (double)height * 0.5;
-      float maxTilt = 40.0F;
-      float currentTilt = (float)Math.sin(t * 1.5) * maxTilt;
+      float maxTilt = 45.0F;
+      float currentTilt = (float)Math.sin(t * 1.8) * maxTilt;
 
       for (int c = 0; c < 2; c++) {
          float tilt = c == 0 ? currentTilt : -currentTilt;
@@ -1420,7 +1420,7 @@ public class TargetEsp extends Module implements ModulePreview {
 
          class_4588 buffer = immediate.method_73477(ROMB_ESP.apply(texture));
          int clr = ColorUtil.replAlpha(color, alpha);
-         float r = radius * 1.1F;
+         float r = radius * 1.15F;
 
          for (int i = 0; i < links; i++) {
             double a0 = (double)i * (Math.PI * 2.0 / (double)links);
@@ -1431,14 +1431,20 @@ public class TargetEsp extends Module implements ModulePreview {
             float x1 = (float)(Math.cos(a1) * (double)r);
             float z1 = (float)(Math.sin(a1) * (double)r);
 
-            float halfH = link * 0.7F;
-            float u0 = (float)i / (float)links * 4.0F + (float)(spin * 0.5);
-            float u1 = (float)(i + 1) / (float)links * 4.0F + (float)(spin * 0.5);
+            float halfH = linkH * 0.5F;
+            float u0 = (float)i * (6.0F / (float)links) + (float)(spin * 0.8);
+            float u1 = (float)(i + 1) * (6.0F / (float)links) + (float)(spin * 0.8);
 
             buffer.method_22918(matrix, x0, -halfH, z0).method_39415(clr).method_22913(u0, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
             buffer.method_22918(matrix, x1, -halfH, z1).method_39415(clr).method_22913(u1, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
             buffer.method_22918(matrix, x1, halfH, z1).method_39415(clr).method_22913(u1, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
             buffer.method_22918(matrix, x0, halfH, z0).method_39415(clr).method_22913(u0, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+
+            // Double sided
+            buffer.method_22918(matrix, x0, halfH, z0).method_39415(clr).method_22913(u0, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, -1.0F);
+            buffer.method_22918(matrix, x1, halfH, z1).method_39415(clr).method_22913(u1, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, -1.0F);
+            buffer.method_22918(matrix, x1, -halfH, z1).method_39415(clr).method_22913(u1, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, -1.0F);
+            buffer.method_22918(matrix, x0, -halfH, z0).method_39415(clr).method_22913(u0, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, -1.0F);
          }
 
          matrices.method_22909();
@@ -1579,8 +1585,8 @@ public class TargetEsp extends Module implements ModulePreview {
       class_2960 c1 = visualTexture("circles1.png");
       class_2960 c2 = visualTexture("circles2.png");
       double groundY = ty + 0.02;
-      float rot1 = (float)(t * 90.0);
-      float rot2 = (float)(-t * 90.0);
+      float rot1 = (float)(t * 120.0);
+      float rot2 = (float)(-t * 120.0);
       float scale1 = radius * 1.35F;
       float scale2 = radius * 1.55F;
       int a = (int)(255.0F * alphaPC);
@@ -1610,10 +1616,19 @@ public class TargetEsp extends Module implements ModulePreview {
       Matrix4f m = matrices.method_23760().method_23761();
       class_4588 buffer = immediate.method_73477(ROMB_ESP.apply(texture));
       int c = ColorUtil.replAlpha(color, alpha);
+
+      // Top face
       buffer.method_22918(m, -1.0F, 1.0F, 0.0F).method_39415(c).method_22913(0.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
       buffer.method_22918(m, 1.0F, 1.0F, 0.0F).method_39415(c).method_22913(1.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
       buffer.method_22918(m, 1.0F, -1.0F, 0.0F).method_39415(c).method_22913(1.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
       buffer.method_22918(m, -1.0F, -1.0F, 0.0F).method_39415(c).method_22913(0.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, 1.0F);
+
+      // Bottom face
+      buffer.method_22918(m, -1.0F, -1.0F, 0.0F).method_39415(c).method_22913(0.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, -1.0F);
+      buffer.method_22918(m, 1.0F, -1.0F, 0.0F).method_39415(c).method_22913(1.0F, 0.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, -1.0F);
+      buffer.method_22918(m, 1.0F, 1.0F, 0.0F).method_39415(c).method_22913(1.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, -1.0F);
+      buffer.method_22918(m, -1.0F, 1.0F, 0.0F).method_39415(c).method_22913(0.0F, 1.0F).method_22922(class_4608.field_21444).method_60803(15728880).method_22914(0.0F, 0.0F, -1.0F);
+
       matrices.method_22909();
    }
 
