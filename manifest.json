@@ -1,8 +1,12 @@
 {
-  "client_version": "1.0.0",
+  "client_version": "1.2.1",
   "minecraft_version": "1.21.11",
   "loader": "fabric",
   "files": {
+    "mods/Lunarix-Client-v1.2.1.jar": {
+      "sha1": "645562808034cd17ceeb3d61dc81bbe37fb55b83",
+      "size": 186256369
+    },
     "mods/fabric-api-0.141.6-1.21.11.jar": {
       "sha1": "c98467cbbaf4d197377266795ae015f4130d65b6",
       "size": 2426039
@@ -18,10 +22,6 @@
     "mods/sodium-fabric-0.8.15-beta.1+mc1.21.11.jar": {
       "sha1": "5469cef6f5dddd72a1216d9a15393c90d8eb5f33",
       "size": 1914874
-    },
-    "mods/Lunarix-Client-1.21.11-1.0.jar": {
-      "sha1": "7e2ae02f73f4589dd51e87fe539406a29c53d25f",
-      "size": 186250748
     }
   },
   "launcher": {
