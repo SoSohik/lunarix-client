@@ -25,10 +25,10 @@
     }
   },
   "launcher": {
-    "version": "1.2.0",
+    "version": "1.2.1",
     "filename": "Lunarix.Launcher.exe",
-    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/750383873",
-    "sha1": "daa883dde7e08908b5f7cf35134c16c4570be2e3",
-    "size": 77855806
+    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/750428375",
+    "sha1": "3f8f878bd45311d50d481a4465e2731e1ee132a0",
+    "size": 77857036
   }
 }
