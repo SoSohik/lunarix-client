@@ -99,6 +99,7 @@ public class AutoTotem extends Module {
    private int oldMainHandSlot = -1;
    private int rightHandSwapInvSlot = -1;
    private long lastActionTime = 0L;
+   private long lastDangerTime = 0L;
    private final StopWatchP lockWatch = new StopWatchP();
    private boolean lockHeld;
    private int lastNotifiedTotemSlot = -1;
@@ -108,8 +109,16 @@ public class AutoTotem extends Module {
       if (mc.field_1724 != null && mc.field_1724.method_5805() && mc.field_1687 != null) {
          if (!this.shouldSkipSwap()) {
             this.handleAutoTotem();
-         } else if (this.swapBack.getValue()) {
-            this.handleSwapBack(this.handMode.is("Левая"));
+         } else {
+            if (this.isDanger()) {
+               this.lastDangerTime = System.currentTimeMillis();
+            }
+
+            if (this.swapBack.getValue()) {
+               this.handleSwapBack(this.handMode.is("Левая"));
+            } else {
+               this.resetSwapBack();
+            }
          }
       } else {
          if (this.lockHeld) {
@@ -146,6 +155,10 @@ public class AutoTotem extends Module {
 
    private void handleAutoTotem() {
       boolean danger = this.isDanger();
+      if (danger) {
+         this.lastDangerTime = System.currentTimeMillis();
+      }
+
       boolean isOffhand = this.handMode.is("Левая");
       int totemSlot = this.findTotemSlot();
       if (danger) {
@@ -222,10 +235,11 @@ public class AutoTotem extends Module {
    }
 
    private void handleSwapBack(boolean isOffhand) {
+      boolean dangerRecently = System.currentTimeMillis() - this.lastDangerTime < 400L;
       if (isOffhand) {
          if (this.oldOffhandSlot == -1 || this.oldOffhandItem.method_7960()) {
             this.resetSwapBack();
-         } else if (System.currentTimeMillis() - this.lastActionTime >= 200L) {
+         } else if (System.currentTimeMillis() - this.lastActionTime >= 200L && !dangerRecently) {
             class_1799 offhand = mc.field_1724.method_6079();
             if (!this.sameItemIdentity(offhand, this.oldOffhandItem)) {
                if (this.canRestoreOffhand()) {
@@ -236,7 +250,7 @@ public class AutoTotem extends Module {
 
             this.resetSwapBack();
          }
-      } else if (this.oldMainHandSlot != -1 && System.currentTimeMillis() - this.lastActionTime >= 200L) {
+      } else if (this.oldMainHandSlot != -1 && System.currentTimeMillis() - this.lastActionTime >= 200L && !dangerRecently) {
          if (this.rightHandSwapInvSlot != -1) {
             this.swapHand(this.rightHandSwapInvSlot, this.oldMainHandSlot);
             this.rightHandSwapInvSlot = -1;
