@@ -1,5 +1,5 @@
 {
-  "client_version": "1.2.1",
+  "client_version": "1.3",
   "minecraft_version": "1.21.11",
   "loader": "fabric",
   "files": [
@@ -35,10 +35,10 @@
     }
   ],
   "launcher": {
-    "version": "1.2.4",
+    "version": "1.3",
     "filename": "Lunarix.Launcher.exe",
-    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/755909113",
-    "sha1": "113fc6e6cb8a64284a0a500050223d97c4f53d50",
-    "size": 76508939
+    "url": "https://api.github.com/repos/SoSohik/lunarix-client/releases/assets/755930300",
+    "sha1": "3b38724d531cc1b9ae33390283acddd09114ff52",
+    "size": 76508688
   }
 }
