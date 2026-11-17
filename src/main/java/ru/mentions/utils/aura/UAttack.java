@@ -178,6 +178,9 @@ public final class UAttack implements IMinecraft {
       }
    }
 
+   private static long critWaitStartMs = 0L;
+   private static final long CRIT_WAIT_TIMEOUT_MS = 450L;
+
    public static boolean isBestMomentToHit(boolean fallCheck) {
       if (mc.field_1724 == null) {
          return true;
@@ -185,22 +188,57 @@ public final class UAttack implements IMinecraft {
          return true;
       } else if (!fallCheck) {
          return true;
+      } else if (AttackUtil.hasMovementRestrictions()) {
+         critWaitStartMs = 0L;
+         return true;
       } else if (AttackUtil.isPlayerInCriticalState()) {
+         critWaitStartMs = 0L;
          return true;
       } else {
-         boolean isCritState = AttackUtil.isPlayerInCriticalState();
          boolean isSmartCrit = AttackAura.get().others.getValue("Умные криты");
          if (!isSmartCrit) {
-            return isCritState || AttackUtil.hasMovementRestrictions();
-         } else if (isCritState || AttackUtil.hasMovementRestrictions()) {
-            return true;
-         } else if (!mc.field_1724.method_24828()) {
-            return mc.field_1724.field_6017 > 0.0F && mc.field_1724.method_18798().field_1351 < -0.03;
-         } else {
-            boolean holdingJump = mc.field_1690.field_1903.method_1434();
-            return !holdingJump || secureRandom.nextInt(5) == 0;
+            return false;
          }
+
+         boolean onGround = mc.field_1724.method_24828();
+         double velY = mc.field_1724.method_18798().field_1351;
+         double fallDistance = mc.field_1724.field_6017;
+         boolean holdingJump = mc.field_1690.field_1903.method_1434();
+
+         if (!onGround) {
+            // справжнє вікно крита: вже падаємо, а не ще летимо вгору
+            boolean critWindow = fallDistance > 0.0F && velY < -0.02;
+            if (critWindow) {
+               critWaitStartMs = 0L;
+               return true;
+            }
+
+            // ще підйом/пік — не витрачаємо удар, чекаємо кілька тіків
+            return waitForCritWindow();
+         }
+
+         // на землі: якщо він стрибає — дочекаємось падіння, інакше б'ємо як є
+         if (holdingJump) {
+            return waitForCritWindow();
+         }
+
+         critWaitStartMs = 0L;
+         return true;
       }
+   }
+
+   private static boolean waitForCritWindow() {
+      long now = System.currentTimeMillis();
+      if (critWaitStartMs == 0L) {
+         critWaitStartMs = now;
+      }
+
+      if (now - critWaitStartMs >= CRIT_WAIT_TIMEOUT_MS) {
+         critWaitStartMs = 0L;
+         return true;
+      }
+
+      return false;
    }
 
    public static boolean useEntity(class_1309 livingIn, Runnable preHit, Runnable postHit, class_1268 hand, boolean cpsBypass) {

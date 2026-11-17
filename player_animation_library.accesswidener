@@ -1,0 +1,5 @@
+accessWidener	v2	intermediary
+extendable	class	net/minecraft/class_630
+accessible	field	net/minecraft/class_761	field_61737	Lnet/minecraft/class_11658;
+accessible	field	net/minecraft/class_3887	field_17155	Lnet/minecraft/class_3883;
+accessible	field	net/minecraft/class_922	field_4738	Ljava/util/List;

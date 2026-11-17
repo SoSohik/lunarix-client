@@ -296,15 +296,38 @@ public class AutoSwap extends Module {
          AutoSwap.ItemTarget secondTarget = this.parseItemTarget(this.secondItemSetting.getValue(), this.onlyEnchanted.getValue());
          if (firstTarget.item == secondTarget.item && firstTarget.onlyEnchanted == secondTarget.onlyEnchanted) {
             int slotA = this.findLegitSlotEx(firstTarget.item, firstTarget.onlyEnchanted, -1);
-            int slotB = this.findLegitSlotEx(firstTarget.item, firstTarget.onlyEnchanted, slotA);
             if (slotA == -1) {
                if (this.swaprender.getValue()) {
                   NotificationManager.send(firstTarget.name + " не найден", NotificationManager.Type.INFO, 1500L);
                }
             } else {
-               int chosen = this.duoUseSecond && slotB != -1 ? slotB : slotA;
+               int slotB = this.findLegitSlotEx(firstTarget.item, firstTarget.onlyEnchanted, slotA);
+               class_1799 offhandStack = mc.field_1724.method_6079();
+               int primary = this.duoUseSecond && slotB != -1 ? slotB : slotA;
+               int secondary = primary == slotA ? slotB : slotA;
+               int chosen = -1;
+
+               for (int candidate : new int[]{primary, secondary}) {
+                  if (candidate == -1) {
+                     continue;
+                  }
+
+                  int invIdx = candidate >= 36 ? candidate - 36 : candidate;
+                  class_1799 stack = mc.field_1724.method_31548().method_5438(invIdx);
+                  if (!sameStackIdentity(offhandStack, stack)) {
+                     chosen = candidate;
+                     break;
+                  }
+               }
+
                this.duoUseSecond = !this.duoUseSecond;
-               this.swapToSlot(chosen, firstTarget.name, isInventoryMode);
+               if (chosen == -1) {
+                  if (this.swaprender.getValue()) {
+                     NotificationManager.send(firstTarget.name + " уже в руке", NotificationManager.Type.INFO, 1500L);
+                  }
+               } else {
+                  this.swapToSlot(chosen, firstTarget.name, isInventoryMode);
+               }
             }
 
             return;

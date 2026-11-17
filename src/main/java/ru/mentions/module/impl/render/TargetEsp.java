@@ -1360,7 +1360,7 @@ public class TargetEsp extends Module implements ModulePreview {
          double py = y + (double)height * (0.12 + 0.76 * ((double)(i % 4) / 3.0)) + Math.sin((double)time / 420.0 + (double)i) * 0.12;
          matrices.method_22903();
          matrices.method_22904(x + Math.cos(a) * r, py, z + Math.sin(a) * r);
-         matrices.method_22907(class_7833.field_40718.rotationDegrees((float)(time / 12L + (long)i * 27L)));
+         matrices.method_22907(class_7833.field_40718.rotationDegrees((float)(time / 12L % 360L + (long)i * 27L)));
          Matrix4f m = matrices.method_23760().method_23761();
          drawCubeOutlineTESP(buffer, m, Math.max(0.045F, radius * 0.13F), color);
          matrices.method_22909();
@@ -1369,6 +1369,10 @@ public class TargetEsp extends Module implements ModulePreview {
 
    public static class_2960 visualTexture(String name) {
       return class_2960.method_60655("client", "textures/visuals/" + name);
+   }
+
+   private static double animSeconds(long now, double speed) {
+      return (double)(now % 3600000L) / 1000.0 * speed;
    }
 
    public static void drawBillboardTESP(
@@ -1415,7 +1419,7 @@ public class TargetEsp extends Module implements ModulePreview {
       float speed
    ) {
       if (alphaPC <= 0.001F) return;
-      double t = (double)now / 1000.0 * (double)speed;
+      double t = animSeconds(now, speed);
       class_2960 texture = visualTexture("chain.png");
       int links = 36;
       float linkH = 0.42F;
@@ -1481,7 +1485,7 @@ public class TargetEsp extends Module implements ModulePreview {
       long now,
       float speed
    ) {
-      double t = (double)now / 1000.0 * (double)speed;
+      double t = animSeconds(now, speed);
       class_2960 texture = visualTexture("glow.png");
       int count = 6;
       int alpha = (int)(230.0F * alphaPC);
@@ -1531,7 +1535,7 @@ public class TargetEsp extends Module implements ModulePreview {
       long now,
       float speed
    ) {
-      double t = (double)now / 1000.0 * (double)speed;
+      double t = animSeconds(now, speed);
       class_2960 texture = visualTexture("glow.png");
       int orbit = 10;
       double rr = (double)radius * 1.1;
@@ -1566,7 +1570,7 @@ public class TargetEsp extends Module implements ModulePreview {
       long now,
       float speed
    ) {
-      double t = (double)now / 1000.0 * (double)speed;
+      double t = animSeconds(now, speed);
       int count = 5;
       int alpha = (int)(235.0F * alphaPC);
 
@@ -1597,7 +1601,7 @@ public class TargetEsp extends Module implements ModulePreview {
       long now
    ) {
       if (alphaPC <= 0.001F || radius <= 0.01F) return;
-      double t = (double)now / 1000.0;
+      double t = animSeconds(now, 1.0);
       class_2960 c1 = visualTexture("circles1.png");
       class_2960 c2 = visualTexture("circles2.png");
       double groundY = ty + 0.02;
@@ -1662,7 +1666,7 @@ public class TargetEsp extends Module implements ModulePreview {
       long now
    ) {
       if (alphaPC <= 0.001F) return;
-      double t = (double)now / 1000.0;
+      double t = animSeconds(now, 1.0);
       class_2960 glow = visualTexture("glow.png");
       double centerY = ty + (double)height * 0.5;
       int alpha = (int)(255.0F * alphaPC);
@@ -1755,7 +1759,7 @@ public class TargetEsp extends Module implements ModulePreview {
       float alphaPC,
       long now
    ) {
-      double t = (double)now / 1000.0;
+      double t = animSeconds(now, 1.0);
       class_2960 cardTex = visualTexture("cards.png");
       int cards = 5;
       int alpha = (int)(230.0F * alphaPC);
@@ -1829,7 +1833,7 @@ public class TargetEsp extends Module implements ModulePreview {
       float size,
       int styleIndex
    ) {
-      double t = (double)now / 1000.0 * (double)speed;
+      double t = animSeconds(now, speed);
       String[] textures = new String[]{"diamond_1.png", "diamond_2.png", "diamond_3.png", "diamond_4.png"};
       class_2960 texture = visualTexture(textures[Math.floorMod(styleIndex, textures.length)]);
       class_2960 glow = visualTexture("glow.png");
