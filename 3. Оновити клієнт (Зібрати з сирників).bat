@@ -13,9 +13,9 @@ if exist "%~dp0..\Sours – копія\gradlew.bat" (
         pause
         exit /b 1
     )
-    if exist "build\libs\Lunarix-Client-v1.2.1.jar" (
-        copy /y "build\libs\Lunarix-Client-v1.2.1.jar" "%~dp0mods\Lunarix-Client-v1.2.1.jar"
-        copy /y "build\libs\Lunarix-Client-v1.2.1.jar" "%APPDATA%\.minecraft\mods\Lunarix-Client-v1.2.1.jar"
+    if exist "build\libs\Lunarix-Client-v1.2.2.jar" (
+        copy /y "build\libs\Lunarix-Client-v1.2.2.jar" "%~dp0mods\Lunarix-Client-v1.2.2.jar"
+        copy /y "build\libs\Lunarix-Client-v1.2.2.jar" "%APPDATA%\.minecraft\mods\Lunarix-Client-v1.2.2.jar"
         del /f /q "%~dp0mods\Lunarix-Client-1.21.11-1.0.jar" 2>nul
         del /f /q "%APPDATA%\.minecraft\mods\Lunarix-Client-1.21.11-1.0.jar" 2>nul
     )

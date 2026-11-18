@@ -3,7 +3,7 @@ $baseDir = $PSScriptRoot
 $manifestPath = "$baseDir\manifest.json"
 
 $filesToCheck = @(
-    "mods\Lunarix-Client-v1.2.1.jar",
+    "mods\Lunarix-Client-v1.2.2.jar",
     "mods\fabric-api-0.141.6-1.21.11.jar",
     "mods\sodium-fabric-0.8.15-beta.1+mc1.21.11.jar",
     "versions\Lunarix Client 1.21.11\Lunarix Client 1.21.11.json",
@@ -14,7 +14,7 @@ if (Test-Path $manifestPath) {
     $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
 } else {
     $manifest = [PSCustomObject]@{
-        client_version = "1.2.1"
+        client_version = "1.3.1"
         minecraft_version = "1.21.11"
         fabric_loader = "0.20.1"
         files = @()
