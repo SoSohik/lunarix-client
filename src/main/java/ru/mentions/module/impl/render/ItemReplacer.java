@@ -6,8 +6,11 @@ import java.util.Map;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.class_11566;
+import net.minecraft.class_1297;
+import net.minecraft.class_1309;
 import net.minecraft.class_1799;
 import net.minecraft.class_3489;
+import net.minecraft.class_811;
 import net.minecraft.class_9280;
 import net.minecraft.class_9334;
 import ru.mentions.module.api.Category;
@@ -160,35 +163,53 @@ public class ItemReplacer extends Module {
       super.onDisable();
    }
 
-   public class_1799 replaceModel(class_1799 stack, class_11566 owner) {
+   public class_1799 replaceModel(class_1799 stack, class_11566 owner, class_811 displayContext) {
       if (!this.isEnabled() || stack == null || stack.method_7960()) {
          return stack;
       } else if (!stack.method_31573(class_3489.field_42611)) {
          return stack;
-      } else if (this.selfOnly.getValue() && owner != null && owner != mc.field_1724) {
+      } else if (displayContext == class_811.field_4317) {
+         // Не заменять в GUI/инвентаре
          return stack;
-      } else {
-         String selected = this.model.getValue();
-         class_9280 value = new class_9280(List.of(), List.of(), List.of(selected), List.of());
-         if (value.equals(stack.method_57381(class_9334.field_49637))) {
-            return stack;
-         } else {
-            int signature = stack.method_57353().hashCode();
-            ItemReplacer.CachedModel cached = CACHE.get(stack);
-            if (cached != null && cached.signature == signature && cached.model.equals(selected)) {
-               return cached.stack;
-            } else {
-               class_1799 copy = stack.method_7972();
-               copy.method_57379(class_9334.field_49637, value);
-               if (CACHE.size() > 512) {
-                  CACHE.clear();
-               }
+      }
 
-               CACHE.put(stack, new ItemReplacer.CachedModel(copy, selected, signature));
-               return copy;
-            }
+      if (this.selfOnly.getValue()) {
+         if (owner == null) {
+            return stack;
+         }
+         class_1309 living = owner.method_72393();
+         if (living == null && owner instanceof class_1309 l) {
+            living = l;
+         }
+         if (mc.field_1724 == null || living == null || living.method_5628() != mc.field_1724.method_5628()) {
+            return stack;
          }
       }
+
+      String selected = this.model.getValue();
+      class_9280 value = new class_9280(List.of(), List.of(), List.of(selected), List.of());
+      if (value.equals(stack.method_57381(class_9334.field_49637))) {
+         return stack;
+      } else {
+         int signature = stack.method_57353().hashCode();
+         ItemReplacer.CachedModel cached = CACHE.get(stack);
+         if (cached != null && cached.signature == signature && cached.model.equals(selected)) {
+            return cached.stack;
+         } else {
+            class_1799 copy = stack.method_7972();
+            copy.method_57379(class_9334.field_49637, value);
+            if (CACHE.size() > 512) {
+               CACHE.clear();
+            }
+
+            CACHE.put(stack, new ItemReplacer.CachedModel(copy, selected, signature));
+            return copy;
+         }
+      }
+   }
+
+   public class_1799 replaceModel(class_1799 stack, class_11566 owner) {
+      return replaceModel(stack, owner, null);
    }
 
    private static record CachedModel(class_1799 stack, String model, int signature) {

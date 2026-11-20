@@ -629,15 +629,13 @@ public class MainMenuScreen extends class_437 implements IMinecraft {
          Draw.rect(iconBoxX, iconBoxY, iconBoxSize, iconBoxSize, ColorUtil.replAlpha(tod.primaryColor, alphaVal * 0.18F), iconBoxSize * 0.5F);
          Draw.rect(iconBoxX + iconBoxSize / 2.0F - 2.5F, iconBoxY + iconBoxSize / 2.0F - 2.5F, 5.0F, 5.0F, ColorUtil.replAlpha(tod.lightColor, alphaVal), 2.5F);
          float textX = iconBoxX + iconBoxSize + 6.0F;
-         Fonts.sf_bold.draw(greeting, textX, y + 4.5F, 8.0F, tod.lightUi ? ColorUtil.getColor(22, 26, 40, alphaVal) : ColorUtil.getColor(255, alphaVal));
+         Fonts.sf_bold.draw(greeting, textX, y + 4.5F, 8.0F, ColorUtil.getColor(255, alphaVal));
          Fonts.sf_regular.draw(
             subtitle,
             textX,
             y + 15.0F,
             6.0F,
-            tod.lightUi
-               ? ColorUtil.replAlpha(ColorUtil.getColor(96, 106, 138), alphaVal * 0.9F)
-               : ColorUtil.replAlpha(ColorUtil.getColor(220, 225, 235), alphaVal * 0.72F)
+            ColorUtil.replAlpha(ColorUtil.getColor(220, 225, 235), alphaVal * 0.85F)
          );
       }
    }
@@ -838,9 +836,7 @@ public class MainMenuScreen extends class_437 implements IMinecraft {
             x, y, width, height, 1.0F, 6.0F, ColorUtil.getColor(12, globalAlpha * ((lightBg ? 0.52F : 0.3F) + hp * (lightBg ? 0.16F : 0.1F)))
          );
          this.drawHoverAccent(x, y, width, height, 6.0F, globalAlpha);
-         int textColor = lightBg
-            ? ColorUtil.replAlpha(ColorUtil.getColor(24, 28, 42), globalAlpha * (0.35F + hp * 0.65F))
-            : ColorUtil.replAlpha(ColorUtil.getColor(255), globalAlpha * (0.3F + hp * 0.7F));
+         int textColor = ColorUtil.replAlpha(ColorUtil.getColor(255), globalAlpha * (0.65F + hp * 0.35F));
          Fonts.sf_regular.draw(this.text(), x + 12.0F, y + 7.8F, 7.0F, textColor);
          Fonts.icon
             .drawCentered(
@@ -860,9 +856,7 @@ public class MainMenuScreen extends class_437 implements IMinecraft {
          int fill = ColorUtil.getColor(12, globalAlpha * ((lightBg ? 0.52F : 0.3F) + hp * (lightBg ? 0.16F : 0.1F)));
          RenderUtil.Blur.blur(x, y, width, height, 1.0F, radius, fill);
          this.drawHoverAccent(x, y, width, height, radius, globalAlpha);
-         int textColor = lightBg
-            ? ColorUtil.replAlpha(ColorUtil.getColor(24, 28, 42), globalAlpha * (0.35F + hp * 0.65F))
-            : ColorUtil.replAlpha(ColorUtil.getColor(255), globalAlpha * (0.3F + hp * 0.7F));
+         int textColor = ColorUtil.replAlpha(ColorUtil.getColor(255), globalAlpha * (0.65F + hp * 0.35F));
          Fonts.sf_regular.draw(this.text(), x + 12.0F, y + 7.8F, 7.0F, textColor);
          Fonts.icon
             .drawCentered(
@@ -902,9 +896,7 @@ public class MainMenuScreen extends class_437 implements IMinecraft {
                x + width / 2.0F + 8.0F,
                y + height / 2.0F - 4.4F,
                7.0F,
-               lightBg
-                  ? ColorUtil.replAlpha(ColorUtil.getColor(24, 28, 42), globalAlpha * (0.3F + hp * 0.4F - progress * 0.24F))
-                  : ColorUtil.getColor(255, globalAlpha * (0.1F + hp * 0.2F - progress * 0.16F))
+               ColorUtil.getColor(255, globalAlpha * (0.5F + hp * 0.4F - progress * 0.3F))
             );
       }
 

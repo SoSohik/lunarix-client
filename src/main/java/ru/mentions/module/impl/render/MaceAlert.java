@@ -10,7 +10,7 @@ import net.minecraft.class_1297;
 import net.minecraft.class_1657;
 import net.minecraft.class_1799;
 import net.minecraft.class_1802;
-import net.minecraft.class_238;
+import net.minecraft.class_243;
 import net.minecraft.class_2960;
 import net.minecraft.class_7923;
 import ru.mentions.manager.event_impl.EventRender3D;
@@ -20,15 +20,17 @@ import ru.mentions.module.api.Category;
 import ru.mentions.module.api.Module;
 import ru.mentions.module.api.ModuleInfo;
 import ru.mentions.module.api.settings.impl.BooleanSetting;
+import ru.mentions.module.api.settings.impl.ColorSetting;
 import ru.mentions.module.api.settings.impl.ModeSetting;
 import ru.mentions.module.api.settings.impl.SliderSetting;
+import ru.mentions.utils.colors.ColorUtil;
 import ru.mentions.utils.notification.NotificationManager;
 import ru.mentions.utils.render.WorldRenderBatcher;
 
 @ModuleInfo(
    name = "Mace Alert",
    category = Category.RENDER,
-   desc = "Предупреждает если у игрока рядом булава в руке и подсвечивает красным"
+   desc = "Предупреждает если у игрока рядом булава в руке и подсвечивает красным чамсом"
 )
 @Environment(EnvType.CLIENT)
 public class MaceAlert extends Module {
@@ -58,10 +60,13 @@ public class MaceAlert extends Module {
       )
       .setVisible(() -> this.sound.getValue());
    public BooleanSetting offHand = new BooleanSetting(this, "Проверять вторую руку", true);
-   public BooleanSetting redGlow = new BooleanSetting(this, "Красная подсветка", true);
+   public BooleanSetting redChams = new BooleanSetting(this, "Красный чамс", true);
+   public ModeSetting chamsMode = new ModeSetting(this, "Режим чамсов", "Оба", "Оба", "Заливка", "Wireframe").setVisible(() -> this.redChams.getValue());
+   public ColorSetting chamsColor = new ColorSetting(this, "Цвет чамса", 0xFFFF2222).setVisible(() -> this.redChams.getValue());
+   public SliderSetting chamsAlpha = new SliderSetting(this, "Прозрачность", 0.35F, 0.05F, 1.0F, 0.05F).setVisible(() -> this.redChams.getValue());
+
    private final Map<Integer, Long> lastWarnedTime = new HashMap<>();
    private final Set<Integer> activeMaceHolders = new HashSet<>();
-   private static final long WARN_COOLDOWN_MS = 15000L;
 
    @EventHandler
    public void onTick(EventTick e) {
@@ -101,19 +106,24 @@ public class MaceAlert extends Module {
 
    @EventHandler
    public void onRender3D(EventRender3D e) {
-      if (this.redGlow.getValue() && mc.field_1687 != null && mc.field_1724 != null && !this.activeMaceHolders.isEmpty()) {
-         WorldRenderBatcher.begin(e.getMatrixStack());
+      if (this.redChams.getValue() && mc.field_1687 != null && mc.field_1724 != null && !this.activeMaceHolders.isEmpty()) {
+         boolean wantFill = this.chamsMode.is("Заливка") || this.chamsMode.is("Оба");
+         boolean wantLine = this.chamsMode.is("Wireframe") || this.chamsMode.is("Оба");
+         int baseColor = this.chamsColor.getValue();
+         int lineC = wantLine ? ColorUtil.replAlpha(baseColor, 240) : 0;
+         int fillC = wantFill ? ColorUtil.replAlpha(baseColor, (int)(this.chamsAlpha.getValue() * 255.0F)) : 0;
 
+         WorldRenderBatcher.begin(e.getMatrixStack());
          try {
             for (Integer id : this.activeMaceHolders) {
                class_1297 entity = mc.field_1687.method_8469(id);
                if (entity instanceof class_1657) {
                   class_1657 player = (class_1657)entity;
                   if (player.method_5805()) {
-                     class_238 box = player.method_5829();
-                     if (box != null) {
-                        WorldRenderBatcher.drawBox(box, -56798, 0.05F);
-                     }
+                     class_243 pos = entity.method_30950(e.getTickDelta());
+                     float width = entity.method_17681();
+                     float height = entity.method_17682();
+                     WorldRenderBatcher.drawChamsBox(pos.field_1352, pos.field_1351, pos.field_1350, width, height, lineC, fillC);
                   }
                }
             }
@@ -151,5 +161,6 @@ public class MaceAlert extends Module {
    protected void onDisable() {
       this.lastWarnedTime.clear();
       this.activeMaceHolders.clear();
+      super.onDisable();
    }
 }

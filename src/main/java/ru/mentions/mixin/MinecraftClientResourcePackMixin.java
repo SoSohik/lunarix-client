@@ -51,10 +51,10 @@ public abstract class MinecraftClientResourcePackMixin {
     */
    @Redirect(
       method = {"method_24226"},
-      at = {@At(
+      at = @At(
          value = "INVOKE",
          target = "Lnet/minecraft/class_156;method_24155(Ljava/lang/Throwable;)V"
-      )}
+      )
    )
    private void lunarix$preventPackCrash(Throwable throwable) {
       if (this.lunarix$isConnected()) {

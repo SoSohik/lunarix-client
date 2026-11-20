@@ -376,10 +376,6 @@ public class AttackAura extends Module {
          return;
       }
 
-      if (!UAttack.msCooldownReached()) {
-         return;
-      }
-
       UAttack.useEntity(target, null, null, class_1268.field_5808, false);
       this.justAttacked = true;
       this.attackFlickAt = System.currentTimeMillis() + 250L;

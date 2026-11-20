@@ -101,7 +101,7 @@ public class AutoTotem extends Module {
    private long lastActionTime = 0L;
    private long lastDangerTime = 0L;
    private long dangerClearSince = 0L;
-   private static final long SWAP_BACK_DELAY_MS = 1200L;
+   private static final long SWAP_BACK_DELAY_MS = 2500L;
    private final StopWatchP lockWatch = new StopWatchP();
    private boolean lockHeld;
    private int lastNotifiedTotemSlot = -1;
@@ -114,8 +114,9 @@ public class AutoTotem extends Module {
             this.lastDangerTime = System.currentTimeMillis();
             this.dangerClearSince = 0L;
          } else {
-            // Захист від миттєвого скидання при отриманні абсорбції після попу тотема
-            if (this.lastDangerTime != 0L && System.currentTimeMillis() - this.lastDangerTime < 1500L) {
+            // Hysteresis: safety must hold for at least 2.5s and effective health must have a safe buffer above threshold
+            float safeThreshold = this.health.getValue() + 3.0F;
+            if (this.lastDangerTime != 0L && (System.currentTimeMillis() - this.lastDangerTime < 2500L || this.getEffectiveHealth() < safeThreshold)) {
                danger = true;
                this.dangerClearSince = 0L;
             } else if (this.dangerClearSince == 0L) {
@@ -185,9 +186,15 @@ public class AutoTotem extends Module {
                }
 
                if (mc.field_1755 == null || mc.field_1755 instanceof class_490) {
-                  if (this.oldOffhandItem.method_7960() && !mc.field_1724.method_6079().method_7960() && !this.isTotem(mc.field_1724.method_6079())) {
-                     this.oldOffhandItem = mc.field_1724.method_6079().method_7972();
-                     this.oldOffhandSlot = totemSlot;
+                  class_1799 currentOffhand = mc.field_1724.method_6079();
+                  if (!currentOffhand.method_7960() && !this.isTotem(currentOffhand)) {
+                     if (this.oldOffhandItem.method_7960() || this.isTotem(this.oldOffhandItem)) {
+                        this.oldOffhandItem = currentOffhand.method_7972();
+                        this.oldOffhandSlot = totemSlot;
+                     }
+                  } else {
+                     this.oldOffhandItem = class_1799.field_8037;
+                     this.oldOffhandSlot = -1;
                   }
 
                   if (totemSlot != this.lastNotifiedTotemSlot) {

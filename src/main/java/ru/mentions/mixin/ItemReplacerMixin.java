@@ -36,7 +36,7 @@ public class ItemReplacerMixin {
    ) {
       ItemReplacer module = ItemReplacer.INSTANCE;
       if (module != null) {
-         stack = module.replaceModel(stack, owner);
+         stack = module.replaceModel(stack, owner, displayContext);
       }
 
       model.method_65584(renderState, stack, resolver, displayContext, world, owner, seed);

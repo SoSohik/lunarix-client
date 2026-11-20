@@ -34,13 +34,23 @@ public class ClientMixin {
       at = {@At("TAIL")}
    )
    private void publishClientTick(CallbackInfo ci) {
-      class_310 client = (class_310)this;
+      class_310 client = (class_310)(Object)this;
       if (!client.method_1493()) {
          class_746 player = client.field_1724;
          class_638 world = client.field_1687;
          if (player != null && world != null) {
             Client.eventHandler().post(new EventTick());
          }
+      }
+   }
+
+   @Inject(
+      method = {"close"},
+      at = {@At("HEAD")}
+   )
+   private void onClientShutdown(CallbackInfo ci) {
+      if (Client.get() != null && Client.get().configManager() != null) {
+         Client.get().configManager().autoSave();
       }
    }
 

@@ -2840,6 +2840,9 @@ public class Menu extends class_437 implements IMinecraft, ClickGuiScreen {
          }
 
          this.activeBind = null;
+         if (Client.get() != null && Client.get().configManager() != null) {
+            Client.get().configManager().autoSave();
+         }
          return true;
       } else {
          if (this.activeString != null) {
