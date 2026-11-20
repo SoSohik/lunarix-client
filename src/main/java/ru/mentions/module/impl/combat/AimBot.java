@@ -497,8 +497,8 @@ public class AimBot extends Module {
                if (!mc.field_1724.method_6115()) {
                   if (!this.onlyOnClick.getValue() || this.isClicking()) {
                      if (!this.onlyWeapon.getValue() || this.isHoldingWeapon()) {
-                        boolean holdingMace = isHoldingMace(mc.field_1724) && this.maceReaction.getValue();
-                        double maxReach = holdingMace ? MACE_RAY_REACH : (double)this.attackDistance.getValue().floatValue();
+                        boolean holdingMace = isHoldingMace(mc.field_1724);
+                        double maxReach = holdingMace ? 3.5 : (double)this.attackDistance.getValue().floatValue();
                         class_1309 aimedTarget = this.resolveCrosshairEntity(maxReach);
                         if (aimedTarget == null && target != null) {
                            if (this.isAimingAtTarget(target, maxReach)) {
@@ -508,7 +508,7 @@ public class AimBot extends Module {
                               class_243 lookVec = mc.field_1724.method_5828(1.0F).method_1029();
                               class_243 toTarget = target.method_73189().method_1031(0.0, target.method_17682() * 0.5, 0.0).method_1020(eyePos).method_1029();
                               double dot = lookVec.method_1026(toTarget);
-                              if (dot > 0.35) {
+                              if (dot > 0.30) {
                                  aimedTarget = target;
                               }
                            }
@@ -520,13 +520,14 @@ public class AimBot extends Module {
                               if (this.targets.get("Мобов").getValue() || aimedTarget instanceof class_1657) {
                                  if (holdingMace) {
                                     double hDist = this.horizontalDistanceTo(aimedTarget);
-                                    double vDist = Math.abs(aimedTarget.method_23318() - mc.field_1724.method_23318());
-                                    if (hDist > 3.0 || vDist > 2.0) {
+                                    // Y різниця: гравець може бути зверху над ціллю (до 2.5 - 3.0 блоків) або трохи знизу
+                                    double playerY = mc.field_1724.method_23318();
+                                    double targetY = aimedTarget.method_23318();
+                                    double heightDiff = playerY - targetY;
+                                    if (hDist > 3.0 || heightDiff < -1.0 || heightDiff > 2.8) {
                                        return;
                                     }
-                                    if (aimedTarget.field_6235 > 0) {
-                                       return;
-                                    }
+                                    // З булавою ігноруємо КД зброї повністю і б'ємо одразу при досягненні дистанції
                                  } else {
                                     double dist = (double)mc.field_1724.method_5739(aimedTarget);
                                     double allowedReach = (double)this.attackDistance.getValue().floatValue();

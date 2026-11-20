@@ -146,8 +146,7 @@ public class MaceHelper extends Module {
                      if (this.autoHit.getValue()
                         && !this.hasAttacked
                         && target != null
-                        && mc.field_1724.method_5739(target) <= 4.0F
-                        && mc.field_1724.method_7261(0.5F) >= 0.9F) {
+                        && mc.field_1724.method_5739(target) <= 4.0F) {
                         mc.field_1761.method_2918(mc.field_1724, target);
                         mc.field_1724.method_6104(class_1268.field_5808);
                         this.hasAttacked = true;
