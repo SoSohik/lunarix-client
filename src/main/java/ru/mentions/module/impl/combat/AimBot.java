@@ -146,7 +146,7 @@ public class AimBot extends Module {
    public BooleanSetting tpsSync = new BooleanSetting(this, "Синхронизация TPS", false).setVisible(() -> this.autoAttack.getValue());
    public BooleanSetting shieldBreak = new BooleanSetting(this, "Ломать щит топором", true).setVisible(() -> this.autoAttack.getValue());
    public ModeSetting sprintReset = new ModeSetting(this, "Сброс спринта", "Packet", "Silent", "Legit", "Нет").setVisible(() -> this.autoAttack.getValue());
-   public BooleanSetting maceReaction = new BooleanSetting(this, "Булава в воздухе (без КД)", true);
+   public BooleanSetting maceReaction = new BooleanSetting(this, "Булава (без КД, 3x2 блока)", true);
    public SliderSetting sprintResumeDelay = new SliderSetting(this, "Возврат спринта (мс)", 250.0F, 50.0F, 800.0F, 10.0F)
       .setVisible(() -> this.autoAttack.getValue() && this.sprintReset.is("Legit"));
    public BooleanSetting onlyOnClick = new BooleanSetting(this, "Только при зажатии ЛКМ", false);
@@ -280,9 +280,9 @@ public class AimBot extends Module {
 
       if (this.aimMode.is("Постоянный")) {
          if (this.canAssist() && target != null && target.method_5805()) {
-            boolean maceAirborne = this.isMaceAirborne();
-            double maxAimDist = maceAirborne ? MACE_HORIZONTAL_REACH : (double)this.aimDistance.getValue().floatValue();
-            double dist = maceAirborne ? this.horizontalDistanceTo(target) : (double)mc.field_1724.method_5739(target);
+            boolean holdingMace = isHoldingMace(mc.field_1724) && this.maceReaction.getValue();
+            double maxAimDist = (double)this.aimDistance.getValue().floatValue();
+            double dist = (double)mc.field_1724.method_5739(target);
             if (dist > maxAimDist) {
                this.resetAim();
             } else {
@@ -330,13 +330,13 @@ public class AimBot extends Module {
                   }
 
                   float friction = 1.0F;
-                  boolean onTarget = this.isAimingAtTarget(target, maceAirborne ? MACE_RAY_REACH : (double)this.attackDistance.getValue().floatValue());
+                  boolean onTarget = this.isAimingAtTarget(target, holdingMace ? MACE_RAY_REACH : (double)this.attackDistance.getValue().floatValue());
                   if (onTarget && this.sticky.getValue()) {
                      friction = 1.0F - this.stickyStrength.getValue();
                   }
 
                   float strength = this.assistStrength.getValue() / 100.0F;
-                  if (maceAirborne) {
+                  if (holdingMace) {
                      strength = Math.min(1.0F, Math.max(0.45F, strength * 1.25F));
                   }
 
@@ -344,12 +344,12 @@ public class AimBot extends Module {
                      strength *= 0.3F;
                   }
 
-                  float speedMult = maceAirborne ? 1.35F : 1.0F;
+                  float speedMult = holdingMace ? 1.35F : 1.0F;
                   float speedX = this.speed.getValue() * 0.75F * strength * speedMult;
                   float speedY = this.speed2.getValue() * 0.75F * strength * speedMult;
-                  float turnLimit = this.maxTurnSpeed.getValue() * (maceAirborne ? 1.4F : 1.0F);
+                  float turnLimit = this.maxTurnSpeed.getValue() * (holdingMace ? 1.4F : 1.0F);
                   float deadZone = this.aimDeadZone.getValue();
-                  float pitchZone = Math.max(deadZone, this.verticalFreedom.getValue() * (maceAirborne ? 0.6F : 1.0F));
+                  float pitchZone = Math.max(deadZone, this.verticalFreedom.getValue() * (holdingMace ? 0.6F : 1.0F));
                   float moveYaw = AimSmoothing.step(yawDelta, speedX * easeYaw * friction, dt, turnLimit, deadZone);
                   float movePitch = this.pitchAssist.getValue() ? AimSmoothing.step(pitchDelta, speedY * easePitch * friction, dt, turnLimit, pitchZone) : 0.0F;
                   float frameLimit = turnLimit * dt;
@@ -396,9 +396,9 @@ public class AimBot extends Module {
    public void onLook(EventLook event) {
       if (this.aimMode.is("При движении мыши")) {
          if (this.canAssist() && target != null && target.method_5805()) {
-            boolean maceAirborne = this.isMaceAirborne();
-            double maxAimDist = maceAirborne ? MACE_HORIZONTAL_REACH : (double)this.aimDistance.getValue().floatValue();
-            double dist = maceAirborne ? this.horizontalDistanceTo(target) : (double)mc.field_1724.method_5739(target);
+            boolean holdingMace = isHoldingMace(mc.field_1724) && this.maceReaction.getValue();
+            double maxAimDist = (double)this.aimDistance.getValue().floatValue();
+            double dist = (double)mc.field_1724.method_5739(target);
             if (dist > maxAimDist) {
                this.resetAim();
             } else {
@@ -433,13 +433,13 @@ public class AimBot extends Module {
                      }
 
                      float friction = 1.0F;
-                     boolean onTarget = this.isAimingAtTarget(target, maceAirborne ? MACE_RAY_REACH : (double)this.attackDistance.getValue().floatValue());
+                     boolean onTarget = this.isAimingAtTarget(target, holdingMace ? MACE_RAY_REACH : (double)this.attackDistance.getValue().floatValue());
                      if (onTarget && this.sticky.getValue()) {
                         friction = 1.0F - this.stickyStrength.getValue();
                      }
 
                      float strength = this.assistStrength.getValue() / 100.0F;
-                     if (maceAirborne) {
+                     if (holdingMace) {
                         strength = Math.min(1.0F, Math.max(0.45F, strength * 1.25F));
                      }
 
@@ -447,8 +447,8 @@ public class AimBot extends Module {
                         strength *= 0.3F;
                      }
 
-                     float speedMult = maceAirborne ? 1.35F : 1.0F;
-                     float turnLimit = this.maxTurnSpeed.getValue() * (maceAirborne ? 1.4F : 1.0F);
+                     float speedMult = holdingMace ? 1.35F : 1.0F;
+                     float turnLimit = this.maxTurnSpeed.getValue() * (holdingMace ? 1.4F : 1.0F);
                      float deadZone = this.aimDeadZone.getValue();
                      double inputYaw = event.getYaw();
                      double inputPitch = event.getPitch();
@@ -456,7 +456,7 @@ public class AimBot extends Module {
                      yawStep = AimSmoothing.mouseStep(yawStep, inputYaw, inputPitch, strength);
                      event.setYaw(inputYaw + (double)yawStep / 0.15);
                      if (this.pitchAssist.getValue()) {
-                        float pitchZone = Math.max(deadZone, this.verticalFreedom.getValue() * (maceAirborne ? 0.6F : 1.0F));
+                        float pitchZone = Math.max(deadZone, this.verticalFreedom.getValue() * (holdingMace ? 0.6F : 1.0F));
                         float pitchStep = AimSmoothing.step(
                            pitchDelta, this.speed2.getValue() * strength * easePitch * friction * speedMult, dt, turnLimit, pitchZone
                         );
@@ -497,64 +497,81 @@ public class AimBot extends Module {
                if (!mc.field_1724.method_6115()) {
                   if (!this.onlyOnClick.getValue() || this.isClicking()) {
                      if (!this.onlyWeapon.getValue() || this.isHoldingWeapon()) {
-                        boolean maceAirborne = this.isMaceAirborne();
-                        double maxReach = maceAirborne ? MACE_RAY_REACH : (double)this.attackDistance.getValue().floatValue();
+                        boolean holdingMace = isHoldingMace(mc.field_1724) && this.maceReaction.getValue();
+                        double maxReach = holdingMace ? MACE_RAY_REACH : (double)this.attackDistance.getValue().floatValue();
                         class_1309 aimedTarget = this.resolveCrosshairEntity(maxReach);
-                        if (aimedTarget == null && target != null && this.isAimingAtTarget(target, maxReach)) {
-                           aimedTarget = target;
+                        if (aimedTarget == null && target != null) {
+                           if (this.isAimingAtTarget(target, maxReach)) {
+                              aimedTarget = target;
+                           } else if (holdingMace) {
+                              class_243 eyePos = mc.field_1724.method_33571();
+                              class_243 lookVec = mc.field_1724.method_5828(1.0F).method_1029();
+                              class_243 toTarget = target.method_73189().method_1031(0.0, target.method_17682() * 0.5, 0.0).method_1020(eyePos).method_1029();
+                              double dot = lookVec.method_1026(toTarget);
+                              if (dot > 0.35) {
+                                 aimedTarget = target;
+                              }
+                           }
                         }
 
                         if (aimedTarget != null && aimedTarget.method_5805() && aimedTarget != mc.field_1724) {
                            String name = aimedTarget.method_5477().getString();
                            if (!Client.get().friendManager().isFriend(name)) {
                               if (this.targets.get("Мобов").getValue() || aimedTarget instanceof class_1657) {
-                                 double attackGate = maceAirborne
-                                    ? this.horizontalDistanceTo(aimedTarget)
-                                    : (double)mc.field_1724.method_5739(aimedTarget);
-                                 double allowedReach = maceAirborne
-                                    ? MACE_HORIZONTAL_REACH
-                                    : (double)this.attackDistance.getValue().floatValue();
-                                 if (!(attackGate > allowedReach)) {
-                                    if (!maceAirborne) {
-                                       float cd = mc.field_1724.method_7261(0.0F);
-                                       float threshold = this.customCooldown.getValue() ? this.customCooldownPercent.getValue() / 100.0F : 0.92F;
-                                       if (cd < threshold) {
-                                          return;
-                                       }
+                                 if (holdingMace) {
+                                    double hDist = this.horizontalDistanceTo(aimedTarget);
+                                    double vDist = Math.abs(aimedTarget.method_23318() - mc.field_1724.method_23318());
+                                    if (hDist > 3.0 || vDist > 2.0) {
+                                       return;
+                                    }
+                                    if (aimedTarget.field_6235 > 0) {
+                                       return;
+                                    }
+                                 } else {
+                                    double dist = (double)mc.field_1724.method_5739(aimedTarget);
+                                    double allowedReach = (double)this.attackDistance.getValue().floatValue();
+                                    if (dist > allowedReach) {
+                                       return;
+                                    }
 
-                                       boolean onGround = mc.field_1724.method_24828();
-                                       boolean holdingJump = mc.field_1690.field_1903.method_1434();
-                                       double velY = mc.field_1724.method_18798().field_1351;
-                                       double fallDist = mc.field_1724.field_6017;
-                                       boolean restricted = AttackUtil.hasMovementRestrictions()
-                                          || AuraUtil.isPlayerInWeb()
-                                          || mc.field_1724.method_6101()
-                                          || mc.field_1724.method_5771()
-                                          || mc.field_1724.method_5869()
-                                          || mc.field_1724.method_5799();
-                                       boolean isCritState = !onGround
-                                          && (velY < -0.05 || fallDist > 0.0 || AttackUtil.isPlayerInCriticalState());
-                                       if (!restricted) {
-                                          if (this.hitConditions.is("Только криты")) {
-                                             if (!isCritState) {
+                                    float cd = mc.field_1724.method_7261(0.0F);
+                                    float threshold = this.customCooldown.getValue() ? this.customCooldownPercent.getValue() / 100.0F : 0.92F;
+                                    if (cd < threshold) {
+                                       return;
+                                    }
+
+                                    boolean onGround = mc.field_1724.method_24828();
+                                    boolean holdingJump = mc.field_1690.field_1903.method_1434();
+                                    double velY = mc.field_1724.method_18798().field_1351;
+                                    double fallDist = mc.field_1724.field_6017;
+                                    boolean restricted = AttackUtil.hasMovementRestrictions()
+                                       || AuraUtil.isPlayerInWeb()
+                                       || mc.field_1724.method_6101()
+                                       || mc.field_1724.method_5771()
+                                       || mc.field_1724.method_5869()
+                                       || mc.field_1724.method_5799();
+                                    boolean isCritState = !onGround
+                                       && (velY < -0.05 || fallDist > 0.0 || AttackUtil.isPlayerInCriticalState());
+                                    if (!restricted) {
+                                       if (this.hitConditions.is("Только криты")) {
+                                          if (!isCritState) {
+                                             return;
+                                          }
+                                       } else if (this.hitConditions.is("Умные криты")) {
+                                          if (holdingJump) {
+                                             // затиснутий пробіл — б'ємо тільки в кріт-вікно: в повітрі під час падіння
+                                             boolean critWindow = !onGround && (velY < -0.03 || fallDist > 0.0);
+                                             if (!critWindow) {
                                                 return;
                                              }
-                                          } else if (this.hitConditions.is("Умные криты")) {
-                                             if (holdingJump) {
-                                                // затиснутий пробіл — б'ємо тільки в кріт-вікно: в повітрі під час падіння
-                                                boolean critWindow = !onGround && (velY < -0.03 || fallDist > 0.0);
-                                                if (!critWindow) {
-                                                   return;
-                                                }
-                                             } else if (!onGround && !isCritState) {
-                                                return;
-                                             }
+                                          } else if (!onGround && !isCritState) {
+                                             return;
                                           }
                                        }
                                     }
-
-                                    this.performAttack(aimedTarget);
                                  }
+
+                                 this.performAttack(aimedTarget);
                               }
                            }
                         }
@@ -756,7 +773,10 @@ public class AimBot extends Module {
       } else {
          class_1799 stack = mc.field_1724.method_6047();
          if (stack != null && !stack.method_7960()) {
-            String name = stack.method_7909().toString().toLowerCase();
+            if (isMaceItem(stack)) {
+               return true;
+            }
+            String name = stack.method_7909().toString().toLowerCase(Locale.ROOT);
             return name.contains("sword") || name.contains("axe") || name.contains("mace");
          } else {
             return false;
@@ -794,9 +814,9 @@ public class AimBot extends Module {
          double bestScore = Double.MAX_VALUE;
          class_243 eyePos = mc.field_1724.method_33571();
          class_243 lookVec = mc.field_1724.method_5828(1.0F).method_1029();
-         boolean maceAir = this.isMaceAirborne();
-         double maxFovHalf = (double)this.fov.getValue().floatValue() / 2.0 * (maceAir ? 1.5 : 1.0);
-         float maxDist = maceAir ? (float)MACE_HORIZONTAL_REACH : this.targetDistance.getValue();
+         boolean holdingMace = isHoldingMace(mc.field_1724) && this.maceReaction.getValue();
+         double maxFovHalf = (double)this.fov.getValue().floatValue() / 2.0 * (holdingMace ? 1.5 : 1.0);
+         float maxDist = this.targetDistance.getValue();
 
          for (class_1297 entity : mc.field_1687.method_18112()) {
             if (entity instanceof class_1309 && this.isValidCandidate((class_1309)entity, maxDist)) {
@@ -806,7 +826,7 @@ public class AimBot extends Module {
                double dot = class_3532.method_15350(lookVec.method_1026(toAim), -1.0, 1.0);
                double angle = Math.toDegrees(Math.acos(dot));
                if (!(angle > maxFovHalf)) {
-                  double dist = maceAir ? this.horizontalDistanceTo(living) : (double)mc.field_1724.method_5739(living);
+                  double dist = (double)mc.field_1724.method_5739(living);
                   double score = angle + dist * 1.5;
                   if (score < bestScore) {
                      bestScore = score;
@@ -822,12 +842,12 @@ public class AimBot extends Module {
 
    private boolean tickSmartRetarget() {
       if (mc.field_1724 != null && mc.field_1687 != null) {
-         boolean maceAir = this.isMaceAirborne();
-         double reach = maceAir
+         boolean holdingMace = isHoldingMace(mc.field_1724) && this.maceReaction.getValue();
+         double reach = holdingMace
             ? MACE_RAY_REACH
             : (double)Math.max(this.attackDistance.getValue(), this.aimDistance.getValue());
          class_1309 crosshair = this.resolveCrosshairEntity(reach);
-         float maxDist = maceAir ? (float)MACE_HORIZONTAL_REACH : this.targetDistance.getValue();
+         float maxDist = this.targetDistance.getValue();
          if (crosshair != null && crosshair != target && this.isValidCandidate(crosshair, maxDist)) {
             long now = System.currentTimeMillis();
             if (crosshair != this.retargetCandidate) {
@@ -858,7 +878,7 @@ public class AimBot extends Module {
       if (entity == null || entity instanceof class_746) {
          return false;
       } else if (entity.method_5805() && !entity.method_5655() && !(entity instanceof class_1531)) {
-         double distance = this.isMaceAirborne() ? this.horizontalDistanceTo(entity) : (double)mc.field_1724.method_5739(entity);
+         double distance = (double)mc.field_1724.method_5739(entity);
          if (distance > maxDist) {
             return false;
          } else if (!this.throughWalls.getValue() && !mc.field_1724.method_6057(entity)) {
@@ -898,8 +918,7 @@ public class AimBot extends Module {
    }
 
    private boolean isValidLockedTarget(class_1309 entity) {
-      boolean maceAir = this.isMaceAirborne();
-      float effectiveDist = maceAir ? (float)MACE_HORIZONTAL_REACH : this.targetDistance.getValue();
+      float effectiveDist = this.targetDistance.getValue();
       if (!this.isValidCandidate(entity, effectiveDist)) {
          return false;
       } else {
@@ -981,23 +1000,7 @@ public class AimBot extends Module {
    }
 
    public boolean isMaceAirborne() {
-      if (mc.field_1724 == null) {
-         return false;
-      } else if (!isHoldingMace(mc.field_1724)) {
-         return false;
-      } else {
-         boolean airborne = (!mc.field_1724.method_24828() || mc.field_1724.field_6017 > 0.0)
-            && !mc.field_1724.method_5799()
-            && !mc.field_1724.method_5771()
-            && !mc.field_1724.method_6101();
-         if (!airborne) {
-            return false;
-         }
-
-         double height = AttackAura.getDistanceToGround(mc.field_1724);
-         double velY = mc.field_1724.method_18798().field_1351;
-         return height >= 1.2 && (velY < 0.0 || mc.field_1724.field_6017 > 0.5);
-      }
+      return mc.field_1724 != null && isHoldingMace(mc.field_1724);
    }
 
    private double horizontalDistanceTo(class_1309 entity) {

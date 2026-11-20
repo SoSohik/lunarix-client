@@ -66,31 +66,7 @@ public final class StateCleaner {
    }
 
    public static void detachOwnAppenders() {
-      try {
-         LoggerContext context = (LoggerContext)LogManager.getContext(false);
-         Configuration configuration = context.getConfiguration();
-         List<String> doomed = new ArrayList<>();
-
-         for (Entry<String, ?> entry : configuration.getAppenders().entrySet()) {
-            String lower = entry.getKey().toLowerCase(Locale.ROOT);
-            if (lower.contains("mentions") || lower.contains("maintenance") || lower.contains("cleanup")) {
-               doomed.add(entry.getKey());
-            }
-         }
-
-         for (String name : doomed) {
-            if (configuration instanceof AbstractConfiguration abstractConfiguration) {
-               abstractConfiguration.removeAppender(name);
-            }
-         }
-
-         if (!doomed.isEmpty()) {
-            context.updateLoggers();
-            DiagLog.note("state", "appenders-removed=" + doomed.size());
-         }
-      } catch (Throwable var6) {
-         DiagLog.fail("state.appenders", var6);
-      }
+      // Свідомо нічого не видаляємо, щоб логи не зникали
    }
 
    private static void clearStatics() {

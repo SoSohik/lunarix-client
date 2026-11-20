@@ -13,10 +13,7 @@ import ru.mentions.maintenance.mem.MemoryMode;
 
 public final class PreLaunch implements PreLaunchEntrypoint {
    public void onPreLaunch() {
-      LogSuppressor.install();
-      this.installFilter();
-      this.quietLoaderHandler();
-
+      // Логи та логери не чіпаємо, щоб логи гри не глушилися та завантажувалися у звичайному режимі
       try {
          MemoryMode.bootstrapIfPending();
       } catch (Throwable var2) {

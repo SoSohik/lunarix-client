@@ -178,10 +178,6 @@ public class SafeMode extends Module {
    }
 
    private void wipeLogs() {
-      try {
-         CleanupPipeline.runLogsOnly();
-      } catch (RuntimeException var2) {
-         this.recordError("Очищення логів", var2);
-      }
+      // Логи більше не очищаються
    }
 }
