@@ -22,6 +22,8 @@ import net.minecraft.class_3675;
 import net.minecraft.class_490;
 import net.minecraft.class_7923;
 import ru.mentions.Client;
+import net.minecraft.class_2663;
+import ru.mentions.manager.event_impl.EventPacket;
 import ru.mentions.manager.event_impl.EventUpdate;
 import ru.mentions.manager.events.orbit.EventHandler;
 import ru.mentions.module.api.Category;
@@ -105,11 +107,47 @@ public class AutoTotem extends Module {
    private final StopWatchP lockWatch = new StopWatchP();
    private boolean lockHeld;
    private int lastNotifiedTotemSlot = -1;
+   private int totemPopTicks = 0;
+   private int swapBackTicks = 0;
+   private int pendingOffhandTicks = 0;
+   private class_1799 expectedOffhand = class_1799.field_8037;
+
+   @EventHandler
+   public void onPacket(EventPacket event) {
+      if (event != null && !event.isSend() && event.getPacket() instanceof class_2663) {
+         class_2663 packet = (class_2663) event.getPacket();
+         if (packet.method_11470() == 35 && mc.field_1687 != null && mc.field_1724 != null) {
+            if (packet.method_11469(mc.field_1687) == mc.field_1724) {
+               this.totemPopTicks = 20;
+               this.swapBackTicks = 0;
+            }
+         }
+      }
+   }
 
    @EventHandler
    public void onUpdate(EventUpdate event) {
       if (mc.field_1724 != null && mc.field_1724.method_5805() && mc.field_1687 != null) {
-         boolean danger = this.isDanger();
+         if (this.totemPopTicks > 0) {
+            this.totemPopTicks--;
+         }
+         if (this.pendingOffhandTicks > 0) {
+            if (!this.expectedOffhand.method_7960() && class_1799.method_31577(mc.field_1724.method_6079(), this.expectedOffhand)) {
+               this.pendingOffhandTicks = 0;
+               this.expectedOffhand = class_1799.field_8037;
+            } else {
+               this.pendingOffhandTicks--;
+               if (this.pendingOffhandTicks <= 0) {
+                  this.expectedOffhand = class_1799.field_8037;
+               }
+            }
+         }
+         boolean danger = this.isDanger() || this.totemPopTicks > 0;
+         if (danger) {
+            this.swapBackTicks = 50;
+         } else if (this.swapBackTicks > 0) {
+            this.swapBackTicks--;
+         }
          if (danger) {
             this.lastDangerTime = System.currentTimeMillis();
             this.dangerClearSince = 0L;
@@ -208,6 +246,8 @@ public class AutoTotem extends Module {
 
                   this.swapHand(totemSlot, 40);
                   this.lastActionTime = System.currentTimeMillis();
+                  this.pendingOffhandTicks = 10;
+                  this.expectedOffhand = totemSlot >= 36 ? mc.field_1724.method_31548().method_5438(totemSlot - 36).method_7972() : mc.field_1724.method_31548().method_5438(totemSlot).method_7972();
                   this.lockHeld = false;
                   this.setKey(true);
                }
@@ -248,7 +288,9 @@ public class AutoTotem extends Module {
          this.resetSwapBack();
          return;
       }
-
+      if (this.totemPopTicks > 0 || this.swapBackTicks > 0 || this.pendingOffhandTicks > 0) {
+         return;
+      }
       if (this.dangerClearSince == 0L
          || System.currentTimeMillis() - this.dangerClearSince < SWAP_BACK_DELAY_MS
          || System.currentTimeMillis() - this.lastActionTime < 200L) {
@@ -327,6 +369,9 @@ public class AutoTotem extends Module {
       this.oldMainHandSlot = -1;
       this.rightHandSwapInvSlot = -1;
       this.lastNotifiedTotemSlot = -1;
+      this.swapBackTicks = 0;
+      this.pendingOffhandTicks = 0;
+      this.expectedOffhand = class_1799.field_8037;
    }
 
    private int findTotemSlot() {

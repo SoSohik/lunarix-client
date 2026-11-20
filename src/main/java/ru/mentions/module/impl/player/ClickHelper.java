@@ -150,6 +150,8 @@ public class ClickHelper extends Module {
    private String targetName = null;
    private boolean underFeetAction = false;
    private boolean isStoppingMovement = false;
+   private int windJumpPendingTicks = 0;
+   private int windJumpResetTicks = 0;
    private final Map<class_1792, Float> animations = new HashMap<>();
    private final Map<class_1792, long[]> cdTracker = new ConcurrentHashMap<>();
    private static final int HUD_COLS = 20;
@@ -291,6 +293,26 @@ public class ClickHelper extends Module {
    @EventHandler
    public void onCooldownTick(EventTick e) {
       if (mc.field_1724 != null && mc.field_1687 != null) {
+         if (this.windJumpPendingTicks > 0) {
+            --this.windJumpPendingTicks;
+            if (this.windJumpPendingTicks == 0) {
+               // Execute wind charge mega jump
+               if (mc.field_1724.method_24828()) {
+                  mc.field_1724.method_6043();
+               }
+               if (mc.field_1690 != null && mc.field_1690.field_1903 != null) {
+                  mc.field_1690.field_1903.method_23481(true);
+                  this.windJumpResetTicks = 2;
+               }
+            }
+         } else if (this.windJumpResetTicks > 0) {
+            --this.windJumpResetTicks;
+            if (this.windJumpResetTicks == 0 && mc.field_1690 != null && mc.field_1690.field_1903 != null) {
+               boolean realHeld = mc.method_22683() != null && class_3675.method_15987(mc.method_22683(), mc.field_1690.field_1903.method_1429().method_1444());
+               mc.field_1690.field_1903.method_23481(realHeld);
+            }
+         }
+
          if (this.menuPending) {
             if (++this.menuTicks > (int)this.openTimeout.getValue().floatValue()) {
                this.menuTicks = 0;
@@ -706,10 +728,10 @@ public class ClickHelper extends Module {
             targetPitch = under ? 90.0F : pitch;
             if (under) {
                underFeet = true;
-               // Автоматичний підскок при використанні під себе на землі
-               if (mc.field_1724.method_24828()) {
-                  mc.field_1724.method_6043();
-               }
+               // Schedule delayed mega jump 1-2 ticks after wind charge is thrown
+               // When wind charge bursts at ground level, upward momentum multiplies giving 10-14 blocks boost!
+               this.windJumpPendingTicks = 2;
+               this.windJumpResetTicks = 0;
             }
          }
 
