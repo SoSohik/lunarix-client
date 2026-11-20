@@ -172,7 +172,7 @@ public final class TriggerUAttack implements IMinecraft {
             boolean holdingJump = mc.field_1690.field_1903.method_1434();
             double velY = mc.field_1724.method_18798().field_1351;
             double fallDist = mc.field_1724.field_6017;
-            boolean isFallingCrit = (!onGround || fallDist > 0.0) && (velY < -0.05 || fallDist > 0.0 || AttackUtil.isPlayerInCriticalState());
+            boolean isFallingCrit = (!onGround || fallDist > 0.0) && (velY <= 0.005 || fallDist > 0.0 || AttackUtil.isPlayerInCriticalState());
             if (onlyCrits) {
                if (!smartCrits) {
                   return isFallingCrit;

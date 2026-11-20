@@ -206,18 +206,18 @@ public final class UAttack implements IMinecraft {
          boolean holdingJump = mc.field_1690.field_1903.method_1434();
 
          if (!onGround) {
-            // справжнє вікно крита: вже падаємо, а не ще летимо вгору
-            boolean critWindow = fallDistance > 0.0F && velY < -0.02;
+            // справжнє вікно крита: починаємо бити трохи раніше (на вершині стрибка при velY <= 0 або мінімальному fallDistance)
+            boolean critWindow = (fallDistance > 0.0F || velY <= 0.005) && (velY < 0.02 || fallDistance > 0.0F);
             if (critWindow) {
                critWaitStartMs = 0L;
                return true;
             }
 
-            // ще підйом/пік — не витрачаємо удар, чекаємо кілька тіків
+            // ще підйом — не витрачаємо удар, чекаємо моменту крита
             return waitForCritWindow();
          }
 
-         // на землі: якщо він стрибає — дочекаємось падіння, інакше б'ємо як є
+         // на землі: якщо затиснутий пробіл — чекаємо фазу падіння для 100% крита, не б'ємо з землі
          if (holdingJump) {
             return waitForCritWindow();
          }
