@@ -2,22 +2,75 @@ package ru.mentions.maintenance;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map.Entry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import ru.mentions.maintenance.logclean.LogSuppressor;
 import ru.mentions.maintenance.mem.MemoryMode;
 
 public final class PreLaunch implements PreLaunchEntrypoint {
    public void onPreLaunch() {
-      // Логи та логери не чіпаємо, щоб логи гри не глушилися та завантажувалися у звичайному режимі
+      // Гарантуємо, що логи пишуться у logs/latest.log навіть якщо лаунчер не передав конфіг log4j
+      this.ensureLogFileAppender();
+
       try {
          MemoryMode.bootstrapIfPending();
       } catch (Throwable var2) {
          DiagLog.fail("prelaunch.memory", var2);
+      }
+   }
+
+   private void ensureLogFileAppender() {
+      try {
+         LoggerContext context = (LoggerContext)LogManager.getContext(false);
+         Configuration configuration = context.getConfiguration();
+         boolean hasFileAppender = false;
+         for (Appender appender : configuration.getAppenders().values()) {
+            if (appender instanceof FileAppender || appender instanceof RollingRandomAccessFileAppender) {
+               hasFileAppender = true;
+               break;
+            }
+         }
+
+         if (!hasFileAppender) {
+            Path gameDir = FabricLoader.getInstance().getGameDir();
+            Path logsDir = gameDir.resolve("logs");
+            Files.createDirectories(logsDir);
+            Path logFile = logsDir.resolve("latest.log");
+
+            PatternLayout layout = PatternLayout.newBuilder()
+               .withPattern("[%d{HH:mm:ss}] [%t/%level]: %msg%n")
+               .build();
+
+            FileAppender appender = FileAppender.newBuilder()
+               .setName("LunarixLatestLog")
+               .withFileName(logFile.toAbsolutePath().toString())
+               .withAppend(false)
+               .setLayout(layout)
+               .setConfiguration(configuration)
+               .build();
+
+            appender.start();
+            configuration.addAppender(appender);
+            for (LoggerConfig loggerConfig : configuration.getLoggers().values()) {
+               loggerConfig.addAppender(appender, Level.INFO, null);
+            }
+            configuration.getRootLogger().addAppender(appender, Level.INFO, null);
+            context.updateLoggers();
+         }
+      } catch (Throwable t) {
+         DiagLog.fail("prelaunch.logger", t);
       }
    }
 
