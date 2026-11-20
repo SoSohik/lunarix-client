@@ -113,13 +113,19 @@ public class AutoTotem extends Module {
          if (danger) {
             this.lastDangerTime = System.currentTimeMillis();
             this.dangerClearSince = 0L;
-         } else if (this.dangerClearSince == 0L) {
-            this.dangerClearSince = System.currentTimeMillis();
+         } else {
+            // Захист від миттєвого скидання при отриманні абсорбції після попу тотема
+            if (this.lastDangerTime != 0L && System.currentTimeMillis() - this.lastDangerTime < 1500L) {
+               danger = true;
+               this.dangerClearSince = 0L;
+            } else if (this.dangerClearSince == 0L) {
+               this.dangerClearSince = System.currentTimeMillis();
+            }
          }
 
          if (!this.shouldSkipSwap()) {
             this.handleAutoTotem(danger);
-         } else {
+         } else if (!danger) {
             this.trySwapBack(this.handMode.is("Левая"));
          }
       } else {
@@ -179,7 +185,7 @@ public class AutoTotem extends Module {
                }
 
                if (mc.field_1755 == null || mc.field_1755 instanceof class_490) {
-                  if (this.oldOffhandItem.method_7960() && !mc.field_1724.method_6079().method_7960()) {
+                  if (this.oldOffhandItem.method_7960() && !mc.field_1724.method_6079().method_7960() && !this.isTotem(mc.field_1724.method_6079())) {
                      this.oldOffhandItem = mc.field_1724.method_6079().method_7972();
                      this.oldOffhandSlot = totemSlot;
                   }
@@ -207,7 +213,7 @@ public class AutoTotem extends Module {
             if (totemSlot != -1) {
                int invIdx = totemSlot >= 36 ? totemSlot - 36 : totemSlot;
                if (invIdx < 9) {
-                  if (this.oldMainHandSlot == -1) {
+                  if (this.oldMainHandSlot == -1 && !this.isTotem(mc.field_1724.method_6047())) {
                      this.oldMainHandSlot = mc.field_1724.method_31548().method_67532();
                   }
 
@@ -215,7 +221,7 @@ public class AutoTotem extends Module {
                   mc.field_1724.method_31548().method_61496(invIdx);
                   this.lastActionTime = System.currentTimeMillis();
                } else {
-                  if (this.oldMainHandSlot == -1) {
+                  if (this.oldMainHandSlot == -1 && !this.isTotem(mc.field_1724.method_6047())) {
                      this.oldMainHandSlot = mc.field_1724.method_31548().method_67532();
                   }
 
@@ -246,10 +252,13 @@ public class AutoTotem extends Module {
    }
 
    private void handleSwapBack(boolean isOffhand) {
+      if (this.isDanger()) {
+         return;
+      }
       if (isOffhand) {
-         if (this.oldOffhandSlot == -1 || this.oldOffhandItem.method_7960()) {
+         if (this.oldOffhandSlot == -1 || this.oldOffhandItem.method_7960() || this.isTotem(this.oldOffhandItem)) {
             this.resetSwapBack();
-         } else if (System.currentTimeMillis() - this.lastActionTime >= 200L) {
+         } else if (System.currentTimeMillis() - this.lastActionTime >= 350L) {
             class_1799 offhand = mc.field_1724.method_6079();
             if (!this.sameItemIdentity(offhand, this.oldOffhandItem)) {
                if (this.canRestoreOffhand()) {
@@ -260,7 +269,7 @@ public class AutoTotem extends Module {
 
             this.resetSwapBack();
          }
-      } else if (this.oldMainHandSlot != -1 && System.currentTimeMillis() - this.lastActionTime >= 200L) {
+      } else if (this.oldMainHandSlot != -1 && System.currentTimeMillis() - this.lastActionTime >= 350L) {
          if (this.rightHandSwapInvSlot != -1) {
             this.swapHand(this.rightHandSwapInvSlot, this.oldMainHandSlot);
             this.rightHandSwapInvSlot = -1;

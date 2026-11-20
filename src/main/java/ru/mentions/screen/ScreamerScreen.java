@@ -40,7 +40,7 @@ public class ScreamerScreen extends class_437 implements IMinecraft {
    }
 
    public void method_25394(class_332 context, int mouseX, int mouseY, float delta) {
-      if (DualWindowService.isCleanPass()) {
+      if (!DualWindowService.isCleanPass()) {
          if (System.nanoTime() - this.startNanos >= DURATION_NANOS) {
             if (!this.closed) {
                this.closed = true;

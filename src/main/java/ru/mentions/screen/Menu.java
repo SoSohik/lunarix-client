@@ -3590,7 +3590,9 @@ public class Menu extends class_437 implements IMinecraft, ClickGuiScreen {
          } else {
             GuiSounds.bindSet();
          }
-
+         if (Client.get() != null && Client.get().configManager() != null) {
+            Client.get().configManager().autoSave();
+         }
          return true;
       } else {
          ClickGui clickGui = Client.get().moduleManager().get(ClickGui.class);

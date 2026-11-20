@@ -703,28 +703,31 @@ public class ClickHelper extends Module {
          float targetPitch = underFeet ? 89.9F : pitch;
          if (this.isWindCharge()) {
             boolean under = !this.mode.is("System") || this.windChargeMode.is("Под себя");
-            targetPitch = under ? 89.9F : pitch;
-            if (under && (this.mode.is("System") && this.windChargeAutoJump.getValue() || this.mode.is("Lunarix")) && mc.field_1724.method_24828()) {
-               mc.field_1724.method_6043();
+            targetPitch = under ? 90.0F : pitch;
+            if (under) {
+               underFeet = true;
+               // Автоматичний підскок при використанні під себе на землі
+               if (mc.field_1724.method_24828()) {
+                  mc.field_1724.method_6043();
+               }
             }
-
-            underFeet = under;
          }
 
+         float prevPlayerPitch = mc.field_1724.method_36455();
          if (underFeet) {
+            mc.field_1724.method_36457(targetPitch);
             mc.field_1724.field_3944.method_52787(new class_2831(yaw, targetPitch, mc.field_1724.method_24828(), false));
          }
 
          mc.field_1761.method_2919(mc.field_1724, hand);
-         float finalPitch = targetPitch;
-         SwingAnimation.sendSequencedPacket(id -> new class_2886(hand, id, yaw, finalPitch));
          if (mc.field_1765 instanceof class_3965 blockHit && this.isBlockInteractItem()) {
             mc.field_1761.method_2896(mc.field_1724, hand, blockHit);
          }
 
          mc.field_1724.method_6104(hand);
          if (underFeet) {
-            mc.field_1724.field_3944.method_52787(new class_2831(yaw, pitch, mc.field_1724.method_24828(), false));
+            mc.field_1724.method_36457(prevPlayerPitch);
+            mc.field_1724.field_3944.method_52787(new class_2831(yaw, prevPlayerPitch, mc.field_1724.method_24828(), false));
          }
       }
    }

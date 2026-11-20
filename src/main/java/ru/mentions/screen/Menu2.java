@@ -1721,6 +1721,9 @@ public class Menu2 extends class_437 implements IMinecraft, ClickGuiScreen {
          this.activeBind.set(reset ? -1 : key);
          this.activeBind = null;
          GuiSounds.bindReset();
+         if (Client.get() != null && Client.get().configManager() != null) {
+            Client.get().configManager().autoSave();
+         }
          return true;
       } else {
          ClickGui clickGui = Client.get().moduleManager().get(ClickGui.class);

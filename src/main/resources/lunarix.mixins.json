@@ -52,8 +52,6 @@
     "MinecraftClientAccessor",
     "MixinHandledScreen",
     "MinecraftClientDisconnectMixin",
-    "MinecraftClientResourcePackMixin",
-    "ServerResourcePackBypassMixin",
     "GameMenuScreenMixin",
     "RenderTickCounterDynamicMixin",
     "InventoryScreenMixin",

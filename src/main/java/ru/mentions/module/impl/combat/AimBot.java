@@ -516,7 +516,7 @@ public class AimBot extends Module {
                                     : (double)this.attackDistance.getValue().floatValue();
                                  if (!(attackGate > allowedReach)) {
                                     if (!maceAirborne) {
-                                       float cd = mc.field_1724.method_7261(this.tpsSync.getValue() ? 1.0F / mc.method_61966().method_60637(true) : 0.0F);
+                                       float cd = mc.field_1724.method_7261(0.0F);
                                        float threshold = this.customCooldown.getValue() ? this.customCooldownPercent.getValue() / 100.0F : 0.92F;
                                        if (cd < threshold) {
                                           return;
@@ -981,7 +981,7 @@ public class AimBot extends Module {
    }
 
    public boolean isMaceAirborne() {
-      if (!this.maceReaction.getValue() || mc.field_1724 == null) {
+      if (mc.field_1724 == null) {
          return false;
       } else if (!isHoldingMace(mc.field_1724)) {
          return false;
@@ -995,7 +995,8 @@ public class AimBot extends Module {
          }
 
          double height = AttackAura.getDistanceToGround(mc.field_1724);
-         return height >= MACE_MIN_HEIGHT && height <= MACE_MAX_HEIGHT;
+         double velY = mc.field_1724.method_18798().field_1351;
+         return height >= 1.2 && (velY < 0.0 || mc.field_1724.field_6017 > 0.5);
       }
    }
 

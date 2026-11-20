@@ -136,7 +136,7 @@ public abstract class MinecraftClientResourcePackMixin {
 
          class_3283 packManager = client.method_1520();
          if (packManager != null) {
-            packManager.method_14447(Collections.emptyList());
+            // packManager.method_14447(Collections.emptyList());
             packManager.method_14445();
          }
 
