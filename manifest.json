@@ -1,12 +1,12 @@
 ﻿{
-    "client_version":  "1.3.5",
+    "client_version":  "1.3.6",
     "minecraft_version":  "1.21.11",
     "fabric_loader":  "0.20.1",
     "files":  [
                   {
                       "path":  "mods/Lunarix-Client-v1.2.1.jar",
-                      "size":  141205065,
-                      "sha1":  "cb1c4610559874b0fc96484f7cc1237becffed4f",
+                      "size":  141947487,
+                      "sha1":  "14c8a9c237aadc4bc9b81205e70d8ae0ce977b1a",
                       "url":  "https://github.com/SoSohik/lunarix-client/releases/download/v1.0.0/Lunarix-Client-v1.2.1.jar"
                   },
                   {

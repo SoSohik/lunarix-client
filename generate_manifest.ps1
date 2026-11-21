@@ -14,7 +14,7 @@ if (Test-Path $manifestPath) {
     $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
 } else {
     $manifest = [PSCustomObject]@{
-        client_version = "1.3.5"
+        client_version = "1.3.6"
         minecraft_version = "1.21.11"
         fabric_loader = "0.20.1"
         files = @()

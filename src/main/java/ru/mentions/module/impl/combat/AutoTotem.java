@@ -9,11 +9,13 @@ import net.minecraft.class_1541;
 import net.minecraft.class_1657;
 import net.minecraft.class_1685;
 import net.minecraft.class_1701;
+import net.minecraft.class_1703;
 import net.minecraft.class_1713;
 import net.minecraft.class_1799;
 import net.minecraft.class_1802;
 import net.minecraft.class_1819;
 import net.minecraft.class_2338;
+import net.minecraft.class_2663;
 import net.minecraft.class_2680;
 import net.minecraft.class_2815;
 import net.minecraft.class_2960;
@@ -22,7 +24,6 @@ import net.minecraft.class_3675;
 import net.minecraft.class_490;
 import net.minecraft.class_7923;
 import ru.mentions.Client;
-import net.minecraft.class_2663;
 import ru.mentions.manager.event_impl.EventPacket;
 import ru.mentions.manager.event_impl.EventUpdate;
 import ru.mentions.manager.events.orbit.EventHandler;
@@ -33,12 +34,12 @@ import ru.mentions.module.api.settings.impl.BooleanSetting;
 import ru.mentions.module.api.settings.impl.ModeSetting;
 import ru.mentions.module.api.settings.impl.SliderSetting;
 import ru.mentions.module.impl.movement.Sprint;
-import ru.mentions.utils.math.StopWatchP;
+import ru.mentions.utils.client.ClientInteractionAccess;
 import ru.mentions.utils.notification.NotificationManager;
 
 @ModuleInfo(
    name = "Auto Totem",
-   desc = "Автоматически берет тотем в руку при опасности",
+   desc = "Автоматически берет тотем в руку при опасности (System logic)",
    category = Category.COMBAT
 )
 @Environment(EnvType.CLIENT)
@@ -71,46 +72,59 @@ public class AutoTotem extends Module {
          "Выкл"
       )
       .setVisible(() -> this.notif.getValue());
+
    public final SliderSetting health = new SliderSetting(this, "Здоровье", 5.0F, 0.0F, 20.0F, 0.5F);
    public final BooleanSetting absorption = new BooleanSetting(this, "Учитывать абсорбцию", true);
    public final BooleanSetting elytra = new BooleanSetting(this, "Здоровье с элитрами", true);
-   public final SliderSetting elytraHealth = new SliderSetting(this, "Здоровье на элитре", 10.0F, 0.0F, 20.0F, 0.5F).setVisible(() -> this.elytra.getValue());
+   public final SliderSetting elytraHealth = new SliderSetting(this, "Здоровье на элитре", 10.0F, 0.0F, 20.0F, 0.5F)
+      .setVisible(() -> this.elytra.getValue());
+
    public final BooleanSetting crystal = new BooleanSetting(this, "Эндер-кристалл", true);
    public final SliderSetting crystalDistance = new SliderSetting(this, "Дистанция кристалла", 5.0F, 1.0F, 10.0F, 0.5F)
       .setVisible(() -> this.crystal.getValue());
+
    public final BooleanSetting tnt = new BooleanSetting(this, "Динамит", true);
    public final SliderSetting tntRange = new SliderSetting(this, "Дистанция динамита", 6.0F, 1.0F, 16.0F, 0.5F)
       .setVisible(() -> this.tnt.getValue() && !this.tntAnyDistance.getValue());
-   public final BooleanSetting tntAnyDistance = new BooleanSetting(this, "Динамит на любой дистанции", false).setVisible(() -> this.tnt.getValue());
+   public final BooleanSetting tntAnyDistance = new BooleanSetting(this, "Динамит на любой дистанции", false)
+      .setVisible(() -> this.tnt.getValue());
+
    public final BooleanSetting trident = new BooleanSetting(this, "Трезубец", true);
    public final BooleanSetting falling = new BooleanSetting(this, "Падение", false);
    public final BooleanSetting mace = new BooleanSetting(this, "Булава", true);
-   public final SliderSetting maceRange = new SliderSetting(this, "Дистанция булавы", 5.0F, 1.0F, 16.0F, 0.5F).setVisible(() -> this.mace.getValue());
-   public final SliderSetting maceHeight = new SliderSetting(this, "Высота булавы", 2.0F, 1.0F, 10.0F, 0.5F).setVisible(() -> this.mace.getValue());
-   public final BooleanSetting maceRoof = new BooleanSetting(this, "Проверять крышу", true).setVisible(() -> this.mace.getValue());
+   public final SliderSetting maceRange = new SliderSetting(this, "Дистанция булавы", 5.0F, 1.0F, 16.0F, 0.5F)
+      .setVisible(() -> this.mace.getValue());
+   public final SliderSetting maceHeight = new SliderSetting(this, "Высота булавы", 2.0F, 1.0F, 10.0F, 0.5F)
+      .setVisible(() -> this.mace.getValue());
+   public final BooleanSetting maceRoof = new BooleanSetting(this, "Проверять крышу", true)
+      .setVisible(() -> this.mace.getValue());
    public final SliderSetting maceRoofRadius = new SliderSetting(this, "Радиус крыши", 2.0F, 1.0F, 4.0F, 1.0F)
       .setVisible(() -> this.mace.getValue() && this.maceRoof.getValue());
+
    public final BooleanSetting saveEnchanted = new BooleanSetting(this, "Сохранять зачарованные", false);
    public final BooleanSetting skipCooldown = new BooleanSetting(this, "Игнорировать кулдаун", true);
    public final BooleanSetting swapBack = new BooleanSetting(this, "Возвращать предмет", true);
    public final BooleanSetting noSwapWhileEating = new BooleanSetting(this, "Не свапать при еде", true);
    public final BooleanSetting notSwapPearl = new BooleanSetting(this, "Не свапать при перле", true);
    public final BooleanSetting noBallSwitch = new BooleanSetting(this, "Не свапать если шар", false);
+
+   // System constants & state
+   private static final long ACTION_DELAY_NANOS = 400_000_000L; // 400ms delay like System
+   private long lastActionNanos = 0L;
+
+   // Swap tracking
+   private int targetSlot = -1;
+   private int pendingSlot = -1;
+   private int pendingCurrent = -1;
+   private boolean swapQueued = false;
+
+   // Offhand tracking
    private int oldOffhandSlot = -1;
    private class_1799 oldOffhandItem = class_1799.field_8037;
-   private int oldMainHandSlot = -1;
-   private int rightHandSwapInvSlot = -1;
-   private long lastActionTime = 0L;
-   private long lastDangerTime = 0L;
-   private long dangerClearSince = 0L;
-   private static final long SWAP_BACK_DELAY_MS = 2500L;
-   private final StopWatchP lockWatch = new StopWatchP();
-   private boolean lockHeld;
-   private int lastNotifiedTotemSlot = -1;
+
    private int totemPopTicks = 0;
-   private int swapBackTicks = 0;
-   private int pendingOffhandTicks = 0;
-   private class_1799 expectedOffhand = class_1799.field_8037;
+   private int lastNotifiedTotemSlot = -1;
+   private boolean keyLatch = false;
 
    @EventHandler
    public void onPacket(EventPacket event) {
@@ -118,8 +132,8 @@ public class AutoTotem extends Module {
          class_2663 packet = (class_2663) event.getPacket();
          if (packet.method_11470() == 35 && mc.field_1687 != null && mc.field_1724 != null) {
             if (packet.method_11469(mc.field_1687) == mc.field_1724) {
-               this.totemPopTicks = 20;
-               this.swapBackTicks = 0;
+               this.totemPopTicks = 15;
+               this.lastActionNanos = 0L; // Allow instant re-equip
             }
          }
       }
@@ -127,303 +141,289 @@ public class AutoTotem extends Module {
 
    @EventHandler
    public void onUpdate(EventUpdate event) {
-      if (mc.field_1724 != null && mc.field_1724.method_5805() && mc.field_1687 != null) {
-         if (this.totemPopTicks > 0) {
-            this.totemPopTicks--;
+      if (mc.field_1724 == null || !mc.field_1724.method_5805() || mc.field_1687 == null) {
+         this.resetAll();
+         return;
+      }
+
+      if (this.totemPopTicks > 0) {
+         this.totemPopTicks--;
+      }
+
+      if (this.keyLatch) {
+         this.keyLatch = false;
+         if (!this.swapQueued) {
+            this.pendingSlot = -1;
          }
-         if (this.pendingOffhandTicks > 0) {
-            if (!this.expectedOffhand.method_7960() && class_1799.method_31577(mc.field_1724.method_6079(), this.expectedOffhand)) {
-               this.pendingOffhandTicks = 0;
-               this.expectedOffhand = class_1799.field_8037;
-            } else {
-               this.pendingOffhandTicks--;
-               if (this.pendingOffhandTicks <= 0) {
-                  this.expectedOffhand = class_1799.field_8037;
-               }
-            }
-         }
-         boolean danger = this.isDanger() || this.totemPopTicks > 0;
-         if (danger) {
-            this.swapBackTicks = 50;
-         } else if (this.swapBackTicks > 0) {
-            this.swapBackTicks--;
-         }
-         if (danger) {
-            this.lastDangerTime = System.currentTimeMillis();
-            this.dangerClearSince = 0L;
-         } else {
-            // Hysteresis: safety must hold for at least 2.5s and effective health must have a safe buffer above threshold
-            float safeThreshold = this.health.getValue() + 3.0F;
-            if (this.lastDangerTime != 0L && (System.currentTimeMillis() - this.lastDangerTime < 2500L || this.getEffectiveHealth() < safeThreshold)) {
-               danger = true;
-               this.dangerClearSince = 0L;
-            } else if (this.dangerClearSince == 0L) {
-               this.dangerClearSince = System.currentTimeMillis();
-            }
+         this.lastActionNanos = System.nanoTime();
+      }
+
+      this.updateCore();
+   }
+
+   private void updateCore() {
+      long now = System.nanoTime();
+      if (now - this.lastActionNanos < ACTION_DELAY_NANOS) {
+         return;
+      }
+
+      boolean danger = this.isDanger() || this.totemPopTicks > 0;
+
+      // 1. If danger is present and we don't already have totem equipped
+      if (danger && !this.handHasTotem()) {
+         if (this.shouldSkipSwap()) {
+            return;
          }
 
-         if (!this.shouldSkipSwap()) {
-            this.handleAutoTotem(danger);
-         } else if (!danger) {
-            this.trySwapBack(this.handMode.is("Левая"));
+         int slot = this.findTotemSlot();
+         if (slot != -1) {
+            this.applySlot(slot);
+            return;
+         }
+      }
+
+      // 2. If eating and noSwapWhileEating, don't execute swap back
+      if (this.noSwapWhileEating.getValue() && mc.field_1724.method_6115() && !(mc.field_1724.method_6030().method_7909() instanceof class_1819)) {
+         return;
+      }
+
+      // 3. Swap back logic
+      if (!this.swapBack.getValue()) {
+         this.resetSwapBack();
+         return;
+      }
+
+      // If danger is still active or totem was recently popped, keep totem in hand!
+      if (danger) {
+         return;
+      }
+
+      if (this.handMode.is("Левая")) {
+         if (this.oldOffhandSlot != -1 && !this.oldOffhandItem.method_7960() && !this.isTotem(this.oldOffhandItem)) {
+            class_1799 currentOffhand = mc.field_1724.method_6079();
+            if (this.isTotem(currentOffhand)) {
+               if (this.canRestoreOffhand()) {
+                  this.swapHand(this.oldOffhandSlot, 40);
+                  this.lastActionNanos = now;
+               }
+            }
+            this.resetOffhandSwapBack();
          }
       } else {
-         this.dangerClearSince = 0L;
-         if (this.lockHeld) {
-            this.lockHeld = false;
-            this.resetSwapBack();
+         // Right hand swap back
+         if (this.targetSlot == -1 && this.pendingSlot == -1) {
+            return;
+         }
+
+         if (this.targetSlot != -1) {
+            int restore = this.targetSlot;
+            this.targetSlot = -1;
+            mc.field_1724.method_31548().method_61496(restore);
+            ClientInteractionAccess.syncSelectedSlot(mc.field_1761);
+            this.lastActionNanos = now;
+            return;
+         }
+
+         if (this.pendingSlot != -1) {
+            int restoreInv = this.pendingSlot;
+            int restoreHotbar = this.pendingCurrent != -1 ? this.pendingCurrent : mc.field_1724.method_31548().method_67532();
+            this.pendingSlot = -1;
+            this.pendingCurrent = -1;
+            this.swapQueued = false;
+            this.swapHand(restoreInv, restoreHotbar);
+            this.lastActionNanos = now;
          }
       }
    }
 
-   private boolean shouldSkipSwap() {
-      if (mc.field_1724 == null) {
-         return true;
-      } else if (this.noSwapWhileEating.getValue() && mc.field_1724.method_6115() && !(mc.field_1724.method_6030().method_7909() instanceof class_1819)) {
-         return true;
+   private void applySlot(int slot) {
+      if (this.handMode.is("Правая")) {
+         int current = mc.field_1724.method_31548().method_67532();
+         int invIdx = slot >= 36 ? slot - 36 : slot;
+
+         // If totem is already in hotbar
+         if (invIdx < 9) {
+            if (invIdx == current) {
+               return;
+            }
+            if (this.targetSlot == -1) {
+               this.targetSlot = current;
+            }
+            mc.field_1724.method_31548().method_61496(invIdx);
+            ClientInteractionAccess.syncSelectedSlot(mc.field_1761);
+            this.lastActionNanos = System.nanoTime();
+            this.notifyTotem(slot);
+            return;
+         }
+
+         // Totem is in main inventory: swap with current hotbar slot
+         if (this.pendingSlot == -1) {
+            this.pendingSlot = slot;
+            this.pendingCurrent = current;
+         }
+         this.swapQueued = true;
+         if (current > 8) {
+            return;
+         }
+
+         this.swapHand(slot, current);
+         this.lastActionNanos = System.nanoTime();
+         this.notifyTotem(slot);
       } else {
-         if (this.notSwapPearl.getValue()) {
-            boolean holdingPearl = mc.field_1724.method_6047() != null && mc.field_1724.method_6047().method_31574(class_1802.field_8634)
-               || mc.field_1724.method_6079() != null && mc.field_1724.method_6079().method_31574(class_1802.field_8634);
-            if (holdingPearl) {
-               return true;
+         // Offhand (Left hand)
+         class_1799 currentOffhand = mc.field_1724.method_6079();
+         if (!currentOffhand.method_7960() && !this.isTotem(currentOffhand)) {
+            if (this.oldOffhandItem.method_7960() || this.isTotem(this.oldOffhandItem)) {
+               this.oldOffhandItem = currentOffhand.method_7972();
+               this.oldOffhandSlot = slot;
             }
          }
 
+         this.swapHand(slot, 40);
+         this.lastActionNanos = System.nanoTime();
+         this.notifyTotem(slot);
+      }
+   }
+
+   private void notifyTotem(int slot) {
+      if (slot != this.lastNotifiedTotemSlot) {
+         this.lastNotifiedTotemSlot = slot;
+         int invIdx = slot >= 36 ? slot - 36 : slot;
+         if (mc.field_1724 != null) {
+            class_1799 totem = mc.field_1724.method_31548().method_5438(invIdx).method_7972();
+            if (!totem.method_7960() && this.notif.getValue()) {
+               NotificationManager.send("Тотем подложен", NotificationManager.Type.MODULE, totem, 1500L, this.soundMode.getValue());
+            }
+         }
+      }
+   }
+
+   private boolean handHasTotem() {
+      if (mc.field_1724 == null) {
+         return false;
+      }
+      if (this.handMode.is("Правая")) {
+         return this.isTotem(mc.field_1724.method_6047());
+      } else {
          if (this.noBallSwitch.getValue() && this.isBall(mc.field_1724.method_6079())) {
             float totalHp = this.getEffectiveHealth();
             if (totalHp > Math.min(3.5F, this.health.getValue())) {
                return true;
             }
          }
-
-         return false;
+         return this.isTotem(mc.field_1724.method_6079());
       }
    }
 
-   private void handleAutoTotem(boolean danger) {
-      boolean isOffhand = this.handMode.is("Левая");
-      int totemSlot = this.findTotemSlot();
-      if (danger) {
-         if (System.currentTimeMillis() - this.lastActionTime < 400L) {
-            return;
-         }
-
-         if (isOffhand) {
-            if (this.isTotem(mc.field_1724.method_6079())) {
-               return;
-            }
-
-            if (totemSlot != -1) {
-               if (!this.lockHeld) {
-                  this.setKey(false);
-                  AttackAura.stoptick = 3;
-                  Sprint.get().tick++;
-                  this.lockHeld = true;
-                  this.lockWatch.reset();
-               }
-
-               if (mc.field_1755 == null || mc.field_1755 instanceof class_490) {
-                  class_1799 currentOffhand = mc.field_1724.method_6079();
-                  if (!currentOffhand.method_7960() && !this.isTotem(currentOffhand)) {
-                     if (this.oldOffhandItem.method_7960() || this.isTotem(this.oldOffhandItem)) {
-                        this.oldOffhandItem = currentOffhand.method_7972();
-                        this.oldOffhandSlot = totemSlot;
-                     }
-                  } else {
-                     this.oldOffhandItem = class_1799.field_8037;
-                     this.oldOffhandSlot = -1;
-                  }
-
-                  if (totemSlot != this.lastNotifiedTotemSlot) {
-                     this.lastNotifiedTotemSlot = totemSlot;
-                     int invIdx = totemSlot >= 36 ? totemSlot - 36 : totemSlot;
-                     class_1799 totem = mc.field_1724.method_31548().method_5438(invIdx).method_7972();
-                     if (!totem.method_7960() && this.notif.getValue()) {
-                        NotificationManager.send("Тотем подложен", NotificationManager.Type.MODULE, totem, 1500L, this.soundMode.getValue());
-                     }
-                  }
-
-                  this.swapHand(totemSlot, 40);
-                  this.lastActionTime = System.currentTimeMillis();
-                  this.pendingOffhandTicks = 10;
-                  this.expectedOffhand = totemSlot >= 36 ? mc.field_1724.method_31548().method_5438(totemSlot - 36).method_7972() : mc.field_1724.method_31548().method_5438(totemSlot).method_7972();
-                  this.lockHeld = false;
-                  this.setKey(true);
-               }
-            }
-         } else {
-            if (this.isTotem(mc.field_1724.method_6047())) {
-               return;
-            }
-
-            if (totemSlot != -1) {
-               int invIdx = totemSlot >= 36 ? totemSlot - 36 : totemSlot;
-               if (invIdx < 9) {
-                  if (this.oldMainHandSlot == -1 && !this.isTotem(mc.field_1724.method_6047())) {
-                     this.oldMainHandSlot = mc.field_1724.method_31548().method_67532();
-                  }
-
-                  this.rightHandSwapInvSlot = -1;
-                  mc.field_1724.method_31548().method_61496(invIdx);
-                  this.lastActionTime = System.currentTimeMillis();
-               } else {
-                  if (this.oldMainHandSlot == -1 && !this.isTotem(mc.field_1724.method_6047())) {
-                     this.oldMainHandSlot = mc.field_1724.method_31548().method_67532();
-                  }
-
-                  this.rightHandSwapInvSlot = totemSlot;
-                  this.swapHand(totemSlot, mc.field_1724.method_31548().method_67532());
-                  this.lastActionTime = System.currentTimeMillis();
-               }
-            }
-         }
-      } else {
-         this.trySwapBack(isOffhand);
+   private boolean shouldSkipSwap() {
+      if (mc.field_1724 == null) {
+         return true;
       }
+      if (this.noSwapWhileEating.getValue() && mc.field_1724.method_6115() && !(mc.field_1724.method_6030().method_7909() instanceof class_1819)) {
+         return true;
+      }
+      if (this.notSwapPearl.getValue()) {
+         boolean holdingPearl = (mc.field_1724.method_6047() != null && mc.field_1724.method_6047().method_31574(class_1802.field_8634))
+            || (mc.field_1724.method_6079() != null && mc.field_1724.method_6079().method_31574(class_1802.field_8634));
+         if (holdingPearl) {
+            return true;
+         }
+      }
+      return false;
    }
 
-   private void trySwapBack(boolean isOffhand) {
-      if (!this.swapBack.getValue()) {
-         this.resetSwapBack();
-         return;
-      }
-      if (this.totemPopTicks > 0 || this.swapBackTicks > 0 || this.pendingOffhandTicks > 0) {
-         return;
-      }
-      if (this.dangerClearSince == 0L
-         || System.currentTimeMillis() - this.dangerClearSince < SWAP_BACK_DELAY_MS
-         || System.currentTimeMillis() - this.lastActionTime < 200L) {
-         return;
-      }
-
-      this.handleSwapBack(isOffhand);
-   }
-
-   private void handleSwapBack(boolean isOffhand) {
-      if (this.isDanger()) {
-         return;
-      }
-      if (isOffhand) {
-         if (this.oldOffhandSlot == -1 || this.oldOffhandItem.method_7960() || this.isTotem(this.oldOffhandItem)) {
-            this.resetSwapBack();
-         } else if (System.currentTimeMillis() - this.lastActionTime >= 350L) {
-            class_1799 offhand = mc.field_1724.method_6079();
-            if (!this.sameItemIdentity(offhand, this.oldOffhandItem)) {
-               if (this.canRestoreOffhand()) {
-                  this.swapHand(this.oldOffhandSlot, 40);
-                  this.lastActionTime = System.currentTimeMillis();
-               }
-            }
-
-            this.resetSwapBack();
-         }
-      } else if (this.oldMainHandSlot != -1 && System.currentTimeMillis() - this.lastActionTime >= 350L) {
-         if (this.rightHandSwapInvSlot != -1) {
-            this.swapHand(this.rightHandSwapInvSlot, this.oldMainHandSlot);
-            this.rightHandSwapInvSlot = -1;
-         }
-
-         mc.field_1724.method_31548().method_61496(this.oldMainHandSlot);
-         this.lastActionTime = System.currentTimeMillis();
-         this.oldMainHandSlot = -1;
-      }
-   }
-
-   private boolean sameItemIdentity(class_1799 a, class_1799 b) {
-      if (a == null || b == null || a.method_7960() || b.method_7960()) {
-         return false;
-      } else if (a.method_7909() != b.method_7909()) {
-         return false;
-      } else if (a.method_7958() != b.method_7958()) {
-         return false;
-      } else {
-         return a.method_7964().getString().equals(b.method_7964().getString());
+   private void swapHand(int slot, int button) {
+      if (mc.field_1761 != null && mc.field_1724 != null) {
+         class_1703 handler = mc.field_1724.field_7512 != null ? mc.field_1724.field_7512 : mc.field_1724.field_7498;
+         int syncId = handler.field_7763;
+         mc.field_1761.method_2906(syncId, slot, button, class_1713.field_7791, mc.field_1724);
+         mc.field_1724.field_3944.method_52787(new class_2815(syncId));
+         ClientInteractionAccess.syncSelectedSlot(mc.field_1761);
       }
    }
 
    private boolean canRestoreOffhand() {
       if (mc.field_1724 == null || this.oldOffhandSlot == -1) {
          return false;
-      } else {
-         int invIdx = this.oldOffhandSlot >= 36 ? this.oldOffhandSlot - 36 : this.oldOffhandSlot;
-         class_1799 s = mc.field_1724.method_31548().method_5438(invIdx);
-         if (s == null || s.method_7960()) {
-            return true;
-         } else {
-            return this.sameItemIdentity(s, this.oldOffhandItem);
-         }
       }
+      int invIdx = this.oldOffhandSlot >= 36 ? this.oldOffhandSlot - 36 : this.oldOffhandSlot;
+      class_1799 s = mc.field_1724.method_31548().method_5438(invIdx);
+      if (s == null || s.method_7960()) {
+         return true;
+      }
+      return this.sameItemIdentity(s, this.oldOffhandItem);
    }
 
-   private void swapHand(int slot, int button) {
-      if (mc.field_1761 != null && mc.field_1724 != null) {
-         mc.field_1761.method_2906(mc.field_1724.field_7498.field_7763, slot, button, class_1713.field_7791, mc.field_1724);
-         mc.field_1724.field_3944.method_52787(new class_2815(mc.field_1724.field_7498.field_7763));
+   private boolean sameItemIdentity(class_1799 a, class_1799 b) {
+      if (a == null || b == null || a.method_7960() || b.method_7960()) {
+         return false;
       }
-   }
-
-   private void resetSwapBack() {
-      this.oldOffhandItem = class_1799.field_8037;
-      this.oldOffhandSlot = -1;
-      this.oldMainHandSlot = -1;
-      this.rightHandSwapInvSlot = -1;
-      this.lastNotifiedTotemSlot = -1;
-      this.swapBackTicks = 0;
-      this.pendingOffhandTicks = 0;
-      this.expectedOffhand = class_1799.field_8037;
+      if (a.method_7909() != b.method_7909()) {
+         return false;
+      }
+      if (a.method_7958() != b.method_7958()) {
+         return false;
+      }
+      return a.method_7964().getString().equals(b.method_7964().getString());
    }
 
    private int findTotemSlot() {
       if (mc.field_1724 == null) {
          return -1;
-      } else {
-         boolean saveEnch = this.saveEnchanted.getValue();
-         boolean skipCd = this.skipCooldown.getValue();
-         if (saveEnch) {
-            for (int i = 0; i < 36; i++) {
-               class_1799 stack = mc.field_1724.method_31548().method_5438(i);
-               if (stack != null
-                  && !stack.method_7960()
-                  && stack.method_7909() == class_1802.field_8288
-                  && !stack.method_7958()
-                  && (skipCd || !mc.field_1724.method_7357().method_7904(stack))) {
-                  return i < 9 ? i + 36 : i;
-               }
-            }
-         }
+      }
+      boolean saveEnch = this.saveEnchanted.getValue();
+      boolean skipCd = this.skipCooldown.getValue();
 
-         for (int ix = 0; ix < 36; ix++) {
-            class_1799 stack = mc.field_1724.method_31548().method_5438(ix);
+      // Priority 1: non-enchanted totems if saveEnchanted is on
+      if (saveEnch) {
+         for (int i = 0; i < 36; i++) {
+            class_1799 stack = mc.field_1724.method_31548().method_5438(i);
             if (stack != null
                && !stack.method_7960()
                && stack.method_7909() == class_1802.field_8288
+               && !stack.method_7958()
                && (skipCd || !mc.field_1724.method_7357().method_7904(stack))) {
-               return ix < 9 ? ix + 36 : ix;
+               return i < 9 ? i + 36 : i;
             }
          }
-
-         return -1;
       }
+
+      // Priority 2: any totem
+      for (int i = 0; i < 36; i++) {
+         class_1799 stack = mc.field_1724.method_31548().method_5438(i);
+         if (stack != null
+            && !stack.method_7960()
+            && stack.method_7909() == class_1802.field_8288
+            && (skipCd || !mc.field_1724.method_7357().method_7904(stack))) {
+            return i < 9 ? i + 36 : i;
+         }
+      }
+
+      return -1;
    }
 
    private boolean isDanger() {
-      return mc.field_1724 == null
-         ? false
-         : this.checkHealth() || this.checkElytra() || this.checkFall() || this.checkCrystal() || this.checkTnt() || this.checkTrident() || this.checkMace();
+      if (mc.field_1724 == null) {
+         return false;
+      }
+      return this.checkHealth()
+         || this.checkElytra()
+         || this.checkFall()
+         || this.checkCrystal()
+         || this.checkTnt()
+         || this.checkTrident()
+         || this.checkMace();
    }
 
    private float getEffectiveHealth() {
       if (mc.field_1724 == null) {
          return 20.0F;
-      } else {
-         float hp = mc.field_1724.method_6032();
-         if (this.absorption.getValue()) {
-            hp += mc.field_1724.method_6067();
-         }
-
-         return hp;
       }
+      float hp = mc.field_1724.method_6032();
+      if (this.absorption.getValue()) {
+         hp += mc.field_1724.method_6067();
+      }
+      return hp;
    }
 
    private boolean checkHealth() {
@@ -431,64 +431,54 @@ public class AutoTotem extends Module {
    }
 
    private boolean checkElytra() {
-      if (!this.elytra.getValue()) {
+      if (!this.elytra.getValue() || mc.field_1724 == null) {
          return false;
-      } else {
-         class_1799 chest = mc.field_1724.method_6118(class_1304.field_6174);
-         return chest != null && chest.method_7909() == class_1802.field_8833 ? this.getEffectiveHealth() <= this.elytraHealth.getValue() : false;
       }
+      class_1799 chest = mc.field_1724.method_6118(class_1304.field_6174);
+      return chest != null && chest.method_7909() == class_1802.field_8833 && this.getEffectiveHealth() <= this.elytraHealth.getValue();
    }
 
    private boolean checkFall() {
-      return !this.falling.getValue()
-         ? false
-         : !mc.field_1724.method_24828() && !mc.field_1724.method_5869() && mc.field_1724.field_6017 >= 3.5 && mc.field_1724.method_18798().field_1351 < -0.6;
+      if (!this.falling.getValue() || mc.field_1724 == null) {
+         return false;
+      }
+      // System logic: health <= 5 or fast fall
+      return !mc.field_1724.method_24828() && !mc.field_1724.method_5869() && mc.field_1724.field_6017 >= 3.5 && mc.field_1724.method_18798().field_1351 < -0.6;
    }
 
    private boolean checkCrystal() {
-      if (this.crystal.getValue() && mc.field_1687 != null) {
+      if (this.crystal.getValue() && mc.field_1687 != null && mc.field_1724 != null) {
          float maxDist = this.crystalDistance.getValue();
-
          for (class_1297 entity : mc.field_1687.method_18112()) {
             if (entity instanceof class_1511 && mc.field_1724.method_5739(entity) <= maxDist) {
                return true;
             }
          }
-
-         return false;
-      } else {
-         return false;
       }
+      return false;
    }
 
    private boolean checkTnt() {
-      if (this.tnt.getValue() && mc.field_1687 != null) {
+      if (this.tnt.getValue() && mc.field_1687 != null && mc.field_1724 != null) {
          float maxDist = this.tntAnyDistance.getValue() ? 25.0F : this.tntRange.getValue();
-
          for (class_1297 entity : mc.field_1687.method_18112()) {
             if ((entity instanceof class_1541 || entity instanceof class_1701) && mc.field_1724.method_5739(entity) <= maxDist) {
                return true;
             }
          }
-
-         return false;
-      } else {
-         return false;
       }
+      return false;
    }
 
    private boolean checkTrident() {
-      if (this.trident.getValue() && mc.field_1687 != null) {
+      if (this.trident.getValue() && mc.field_1687 != null && mc.field_1724 != null) {
          for (class_1297 entity : mc.field_1687.method_18112()) {
             if (entity instanceof class_1685 && mc.field_1724.method_5739(entity) <= 8.0F) {
                return true;
             }
          }
-
-         return false;
-      } else {
-         return false;
       }
+      return false;
    }
 
    private boolean checkMace() {
@@ -528,29 +518,25 @@ public class AutoTotem extends Module {
                }
             }
          }
-
-         return false;
-      } else {
-         return false;
       }
+      return false;
    }
 
    private boolean isMace(class_1799 stack) {
       if (stack == null || stack.method_7960()) {
          return false;
-      } else if (stack.method_31574(class_1802.field_49814)) {
-         return true;
-      } else {
-         try {
-            class_2960 id = class_7923.field_41178.method_10221(stack.method_7909());
-            if (id != null && id.method_12832().contains("mace")) {
-               return true;
-            }
-         } catch (Throwable var3) {
-         }
-
-         return false;
       }
+      if (stack.method_31574(class_1802.field_49814)) {
+         return true;
+      }
+      try {
+         class_2960 id = class_7923.field_41178.method_10221(stack.method_7909());
+         if (id != null && id.method_12832().contains("mace")) {
+            return true;
+         }
+      } catch (Throwable ignored) {
+      }
+      return false;
    }
 
    private boolean hasRoofAbove(double px, double py, double pz, double maxH, double radius) {
@@ -572,7 +558,6 @@ public class AutoTotem extends Module {
             }
          }
       }
-
       return false;
    }
 
@@ -581,28 +566,36 @@ public class AutoTotem extends Module {
    }
 
    private boolean isBall(class_1799 stack) {
-      return stack != null && !stack.method_7960() ? stack.method_31574(class_1802.field_8575) : false;
+      return stack != null && !stack.method_7960() && stack.method_31574(class_1802.field_8575);
    }
 
    @Override
    public void onDisable() {
       super.onDisable();
-      this.dangerClearSince = 0L;
-      if (this.lockHeld) {
-         this.lockHeld = false;
-      }
-
-      this.resetSwapBack();
+      this.resetAll();
    }
 
-   private void setKey(boolean state) {
-      class_304[] movementKeys = new class_304[]{
-         mc.field_1690.field_1894, mc.field_1690.field_1881, mc.field_1690.field_1913, mc.field_1690.field_1849, mc.field_1690.field_1903
-      };
+   private void resetAll() {
+      this.resetSwapBack();
+      this.lastActionNanos = 0L;
+      this.totemPopTicks = 0;
+   }
 
-      for (class_304 keyBinding : movementKeys) {
-         boolean pressed = state && class_3675.method_15987(mc.method_22683(), keyBinding.method_1429().method_1444());
-         keyBinding.method_23481(pressed);
-      }
+   private void resetSwapBack() {
+      this.resetOffhandSwapBack();
+      this.targetSlot = -1;
+      this.pendingSlot = -1;
+      this.pendingCurrent = -1;
+      this.swapQueued = false;
+      this.lastNotifiedTotemSlot = -1;
+   }
+
+   private void resetOffhandSwapBack() {
+      this.oldOffhandItem = class_1799.field_8037;
+      this.oldOffhandSlot = -1;
+   }
+
+   public void latchKey() {
+      this.keyLatch = true;
    }
 }
